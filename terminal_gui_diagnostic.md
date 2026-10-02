@@ -114,9 +114,9 @@ Step 20 single-step render time: 0.0025 ms
 
 ---
 
-## 4. Comparison Target — Claude Code vs. Lumen Terminal UI
+## 4. Comparison Target — Lumen vs. Lumen Terminal UI
 
-| Feature | Claude Code Terminal UI | Current Lumen CLI (`run_agent.py`) | Current Lumen TUI (`src/tui/app.py`) |
+| Feature | Lumen Terminal UI | Current Lumen CLI (`run_agent.py`) | Current Lumen TUI (`src/tui/app.py`) |
 | :--- | :--- | :--- | :--- |
 | **Real-time Token Streaming** | Yes (live inline character typing) | ❌ **No** (batched after 4.5s) | ⚠️ Partial (streams over WebSocket) |
 | **Persistent Status / Header** | Yes (live animated status line) | ❌ No (static prints) | ⚠️ Static `Header()` widget |

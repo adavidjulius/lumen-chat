@@ -1,7 +1,7 @@
 # Lumen CLI v3: Refined Clean TUI Report
 
 > [!IMPORTANT]
-> **Superseded Notice (August 2026)**: The prior "v3 original identity" direction (which intentionally moved away from Claude Code's amber palette to deep blue/cyan/green) has been **explicitly reversed and superseded**. Lumen CLI has been restyled to match Claude Code's visual style directly, including its signature amber/orange color palette (`#f59e0b` / `#d97706`), rounded-corner outer session box, window title bar context, two-column welcome screen layout, `>` user / `●` assistant turn markers, and `· <Verb>… (<elapsed>s · ↑ <tokens> tokens · esc to interrupt)` status line format, while preserving all underlying functional work and collapsible thinking block mechanics.
+> **Superseded Notice (August 2026)**: The prior "v3 original identity" direction (which intentionally moved away from Lumen's amber palette to deep blue/cyan/green) has been **explicitly reversed and superseded**. Lumen CLI has been restyled to match Lumen's visual style directly, including its signature amber/orange color palette (`#f59e0b` / `#d97706`), rounded-corner outer session box, window title bar context, two-column welcome screen layout, `>` user / `●` assistant turn markers, and `· <Verb>… (<elapsed>s · ↑ <tokens> tokens · esc to interrupt)` status line format, while preserving all underlying functional work and collapsible thinking block mechanics.
 
 ## Executive Summary
 

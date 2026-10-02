@@ -1,4 +1,4 @@
-# Lumen CLI v2: Claude-Code-Style Bordered Live TUI Report
+# Lumen CLI v2: Lumen-Style Bordered Live TUI Report
 
 ## R&D — Reference Image Analysis
 

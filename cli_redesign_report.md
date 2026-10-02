@@ -1,4 +1,4 @@
-# Lumen CLI Redesign Report: Minimal Claude-Code-Style Terminal Experience
+# Lumen CLI Redesign Report: Minimal Lumen-Style Terminal Experience
 
 ## Overview
 
