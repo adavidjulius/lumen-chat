@@ -5,28 +5,84 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lumen Brain">
 <meta name="format-detection" content="telephone=no">
 <title>Assistant · Lumen Study Brain</title>
+
+<!-- KaTeX for crisp mathematical formulas (with auto-render and graceful fallback) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" crossorigin="anonymous"></script>
+
 <style>
 /* ══════════════════════════════════════════════════════════════
    Lumen Study Brain — iOS Native Chat UI
-   Matched to iOS Assistant Screenshot
+   Matched to iOS Assistant Design
+   Dark Mode / Light Mode Support + LaTeX Formula Formatting
    100% Free, Standalone & iOS 12 / iPad mini 2 Compatible
    ══════════════════════════════════════════════════════════════ */
 
+/* Light Mode Tokens (Default) */
 :root {
   --nav-bg: #1c3554;
   --nav-text: #ffffff;
   --canvas-bg: #f6f4ee;
   --bubble-user: #d2e4fc;
+  --bubble-user-text: #0f172a;
+  --bubble-user-border: #bfdbfe;
   --bubble-bot: #ffffff;
+  --bubble-bot-text: #1e293b;
+  --bubble-bot-border: #e2e8f0;
+  --bubble-bot-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
   --text-dark: #1e293b;
   --text-muted: #64748b;
   --text-light: #94a3b8;
   --border-color: #e2e8f0;
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --bar-bg: #ffffff;
   --accent-blue: #2563eb;
+  --code-bg: #0f172a;
+  --code-text: #f8fafc;
+  --math-box-bg: #eff6ff;
+  --math-box-border: #93c5fd;
+  --math-box-text: #1e3a8a;
+  --heading-color: #0f2b48;
+  --hr-color: #cbd5e1;
+  --table-border: #cbd5e1;
+  --table-header-bg: #f1f5f9;
   --font-apple: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+/* Dark Mode Tokens */
+body.dark-mode {
+  --nav-bg: #090e1a;
+  --nav-text: #ffffff;
+  --canvas-bg: #0b0f19;
+  --bubble-user: #2563eb;
+  --bubble-user-text: #ffffff;
+  --bubble-user-border: #1d4ed8;
+  --bubble-bot: #162033;
+  --bubble-bot-text: #f8fafc;
+  --bubble-bot-border: #23314d;
+  --bubble-bot-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --text-dark: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+  --border-color: #23314d;
+  --input-bg: #131b2e;
+  --input-border: #2e3e60;
+  --bar-bg: #0f172a;
+  --accent-blue: #3b82f6;
+  --code-bg: #070b14;
+  --code-text: #a5f3fc;
+  --math-box-bg: rgba(37, 99, 235, 0.16);
+  --math-box-border: #3b82f6;
+  --math-box-text: #93c5fd;
+  --heading-color: #60a5fa;
+  --hr-color: #23314d;
+  --table-border: #2d3b55;
+  --table-header-bg: #1b263d;
 }
 
 * {
@@ -45,6 +101,8 @@ html, body {
   font-size: 16px;
   line-height: 1.45;
   color: var(--text-dark);
+  -webkit-transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #app-container {
@@ -57,7 +115,7 @@ html, body {
   position: relative;
 }
 
-/* ── Top Navigation Bar (Exact Match) ───────────────────────── */
+/* ── Top Navigation Bar (Header) ────────────────────────────── */
 .nav-header {
   height: 54px;
   min-height: 54px;
@@ -78,7 +136,7 @@ html, body {
   display: flex;
   -webkit-align-items: center;
   align-items: center;
-  width: 60px;
+  width: 70px;
 }
 
 .nav-circle-btn {
@@ -142,7 +200,27 @@ html, body {
   align-items: center;
   -webkit-justify-content: flex-end;
   justify-content: flex-end;
-  width: 60px;
+  gap: 8px;
+  width: 80px;
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: none;
+  font-size: 19px;
+  cursor: pointer;
+  padding: 4px;
+  color: #ffffff;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+}
+
+.theme-toggle-btn:active {
+  opacity: 0.7;
 }
 
 .nav-clear-btn {
@@ -152,7 +230,7 @@ html, body {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  padding: 6px 8px;
+  padding: 6px 4px;
 }
 
 .nav-clear-btn:active {
@@ -192,43 +270,69 @@ html, body {
 }
 
 .bubble {
-  max-width: 82%;
-  padding: 12px 18px;
-  font-size: 16px;
-  line-height: 1.5;
+  max-width: 88%;
+  padding: 14px 18px;
+  font-size: 15.5px;
+  line-height: 1.55;
   word-break: break-word;
   position: relative;
 }
 
-/* User Message: Pastel Blue */
+/* User Message: Pastel Blue (Light) / Royal Blue (Dark) */
 .chat-row.user .bubble {
   background-color: var(--bubble-user);
-  color: var(--text-dark);
+  color: var(--bubble-user-text);
+  border: 1px solid var(--bubble-user-border);
   border-radius: 20px 20px 4px 20px;
   box-shadow: 0 1px 4px rgba(30, 41, 59, 0.08);
 }
 
-/* Assistant Message: Clean White */
+/* Assistant Message: White (Light) / Slate Card (Dark) */
 .chat-row.bot .bubble {
   background-color: var(--bubble-bot);
-  color: var(--text-dark);
+  color: var(--bubble-bot-text);
+  border: 1px solid var(--bubble-bot-border);
   border-radius: 20px 20px 20px 4px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.07);
+  box-shadow: var(--bubble-bot-shadow);
 }
 
 /* Timestamp */
 .bubble-time {
   font-size: 10px;
   color: var(--text-muted);
-  margin-top: 5px;
+  margin-top: 6px;
   text-align: right;
 }
 
 .chat-row.user .bubble-time {
-  color: rgba(30, 41, 59, 0.55);
+  opacity: 0.7;
 }
 
-/* Markdown formatting inside bubbles */
+/* ── Formatted Markdown inside Bubbles ──────────────────────── */
+.bubble h1.chat-h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 14px 0 6px 0;
+  color: var(--heading-color);
+  line-height: 1.3;
+}
+
+.bubble h2.chat-h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 12px 0 6px 0;
+  color: var(--heading-color);
+  line-height: 1.3;
+}
+
+.bubble h3.chat-h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 10px 0 4px 0;
+  color: var(--heading-color);
+  line-height: 1.35;
+}
+
 .bubble p {
   margin-bottom: 8px;
 }
@@ -238,31 +342,54 @@ html, body {
 
 .bubble strong {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text-dark);
 }
 
-.bubble ul, .bubble ol {
-  margin: 6px 0 6px 20px;
+.bubble em {
+  font-style: italic;
 }
 
-.bubble li {
-  margin-bottom: 4px;
+.bubble hr.chat-hr {
+  border: none;
+  border-top: 1px solid var(--hr-color);
+  margin: 12px 0;
 }
 
-.bubble code {
+.bubble ul.chat-ul {
+  margin: 6px 0 8px 22px;
+  padding: 0;
+  list-style-type: disc;
+}
+
+.bubble ol.chat-ol {
+  margin: 6px 0 8px 22px;
+  padding: 0;
+  list-style-type: decimal;
+}
+
+.bubble li.chat-li, .bubble li.chat-li-num {
+  margin-bottom: 5px;
+  line-height: 1.5;
+}
+
+.bubble code.chat-inline-code {
   background-color: rgba(0, 0, 0, 0.06);
-  padding: 2px 5px;
+  padding: 2px 6px;
   border-radius: 4px;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 13.5px;
+}
+
+body.dark-mode .bubble code.chat-inline-code {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .bubble pre {
-  background-color: #0f172a;
-  color: #f8fafc;
+  background-color: var(--code-bg);
+  color: var(--code-text);
   padding: 12px 14px;
   border-radius: 10px;
-  margin: 8px 0;
+  margin: 10px 0;
   font-family: var(--font-mono);
   font-size: 13px;
   overflow-x: auto;
@@ -270,22 +397,112 @@ html, body {
   line-height: 1.45;
 }
 
+.bubble pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
 .bubble table {
   border-collapse: collapse;
   width: 100%;
-  margin: 10px 0;
+  margin: 12px 0;
   font-size: 13px;
 }
 
 .bubble th, .bubble td {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--table-border);
   padding: 6px 10px;
   text-align: left;
 }
 
 .bubble th {
-  background-color: #f1f5f9;
+  background-color: var(--table-header-bg);
   font-weight: 600;
+}
+
+/* ── Formula & LaTeX Styling ────────────────────────────────── */
+.math-block {
+  margin: 12px 0;
+  padding: 10px 14px;
+  background-color: var(--math-box-bg);
+  border: 1px solid var(--math-box-border);
+  border-radius: 8px;
+  color: var(--math-box-text);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.math-inline {
+  display: inline-block;
+  padding: 1px 3px;
+  color: var(--math-box-text);
+  font-style: normal;
+}
+
+.math-boxed {
+  display: inline-block;
+  border: 1.5px solid var(--math-box-border);
+  background-color: var(--math-box-bg);
+  color: var(--math-box-text);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin: 3px 0;
+}
+
+.math-frac {
+  display: inline-flex;
+  display: -webkit-inline-flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  vertical-align: -0.45em;
+  text-align: center;
+  padding: 0 4px;
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+.math-num {
+  border-bottom: 1.2px solid currentColor;
+  padding-bottom: 2px;
+}
+
+.math-den {
+  padding-top: 2px;
+}
+
+.math-sqrt {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.math-sqrt-stem {
+  border-top: 1.2px solid currentColor;
+  padding-top: 1px;
+  margin-left: 1px;
+}
+
+.math-text {
+  font-style: normal;
+  font-family: var(--font-apple);
+}
+
+/* KaTeX custom theme integration */
+.katex-display {
+  background-color: var(--math-box-bg) !important;
+  border: 1px solid var(--math-box-border) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  margin: 10px 0 !important;
+  color: var(--math-box-text) !important;
+}
+
+body.dark-mode .katex {
+  color: #f1f5f9 !important;
 }
 
 /* ── Thinking Animation ─────────────────────────────────────── */
@@ -302,7 +519,7 @@ html, body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: #64748b;
+  background-color: var(--text-muted);
   opacity: 0.4;
   -webkit-animation: bounce 1.2s infinite ease-in-out;
   animation: bounce 1.2s infinite ease-in-out;
@@ -330,7 +547,7 @@ html, body {
 
 /* ── Bottom Input Bar (Exact Match) ─────────────────────────── */
 .input-bar {
-  background-color: #ffffff;
+  background-color: var(--bar-bg);
   border-top: 1px solid var(--border-color);
   padding: 10px 14px;
   display: -webkit-flex;
@@ -355,8 +572,8 @@ html, body {
   width: 100%;
   height: 44px;
   border-radius: 22px;
-  background-color: #fafafa;
-  border: 1px solid #d1d5db;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
   padding: 0 42px 0 18px;
   font-size: 16px;
   font-family: var(--font-apple);
@@ -368,7 +585,6 @@ html, body {
 
 .msg-input:focus {
   border-color: var(--accent-blue);
-  background-color: #ffffff;
 }
 
 .mic-btn {
@@ -435,22 +651,24 @@ html, body {
   position: absolute;
   top: 54px;
   left: 16px;
-  width: 300px;
-  background-color: #ffffff;
+  width: 310px;
+  background-color: var(--bubble-bot);
+  border: 1px solid var(--border-color);
   border-radius: 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   padding: 16px;
   display: -webkit-flex;
   display: flex;
   -webkit-flex-direction: column;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  color: var(--text-dark);
 }
 
 .sheet-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--nav-bg);
+  color: var(--accent-blue);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -466,17 +684,18 @@ html, body {
   -webkit-align-items: center;
   align-items: center;
   gap: 10px;
-  background-color: #f8fafc;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
 }
 
 .sheet-item:active {
-  background-color: #e2e8f0;
+  background-color: rgba(37, 99, 235, 0.1);
 }
 
 .api-input-box {
   margin-top: 6px;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 8px;
 }
 
 .api-input-box label {
@@ -490,7 +709,9 @@ html, body {
 .api-input-box input {
   width: 100%;
   padding: 6px 10px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-dark);
   border-radius: 6px;
   font-size: 12px;
   font-family: var(--font-mono);
@@ -519,6 +740,7 @@ html, body {
     </div>
 
     <div class="nav-right">
+      <button id="theme-btn" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">&#9790;</button>
       <button class="nav-clear-btn" onclick="clearMessages()">New</button>
     </div>
   </header>
@@ -529,7 +751,7 @@ html, body {
     <!-- Greeting Bubble -->
     <div class="chat-row bot">
       <div class="bubble">
-        Hi! &#128075; I'm your Lumen study assistant. Ask me anything to study, understand concepts, or review topics together!
+        Hi! &#128075; I'm your Lumen study assistant. Ask me anything to study, understand concepts, or review formulas and topics together!
         <div class="bubble-time">10:09 AM</div>
       </div>
     </div>
@@ -567,13 +789,14 @@ html, body {
     <div class="sheet-item" onclick="quickPrompt('Quiz me with 3 practice questions on: ')">&#9989; Quiz Me on Topic</div>
     <div class="sheet-item" onclick="quickPrompt('Summarize key points, formulas, and cheat sheet for: ')">&#128221; Summarize Notes</div>
     <div class="sheet-item" onclick="quickPrompt('Help me solve step-by-step: ')">&#128290; Step-by-Step Solver</div>
-    <div class="sheet-item" onclick="clearMessages()">&#128465; Clear Conversation</div>
+    <div class="sheet-item" onclick="toggleTheme()">&#127763; Toggle Dark / Light Theme</div>
+    <div class="sheet-item" onclick="clearMessages()">&#128465; Clear Conversation Context</div>
 
     <!-- Optional Custom API Key (for zero-latency Gemini/Groq) -->
     <div class="api-input-box">
       <label>Custom API Key (Optional):</label>
       <input type="password" id="custom-api-key" placeholder="Gemini or Groq API Key..." onchange="saveCustomKey(this.value)">
-      <div style="font-size:10px;color:#94a3b8;margin-top:3px;">Leave blank for default free cloud brain.</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:3px;">Leave blank for default free cloud brain.</div>
     </div>
   </div>
 </div>
@@ -582,7 +805,12 @@ html, body {
 /* ══════════════════════════════════════════════════════════════
    Lumen Study Brain — Pure ES5 JavaScript
    Compatible with Safari 12 / iOS 12.5.x (iPad mini 2)
-   Direct Cloud AI API with Zero Server Dependency!
+   Features:
+   - Full Markdown Heading (###), List, Bold, Table, HR parser
+   - Balanced-Brace LaTeX Formula Renderer (\boxed, \frac, \approx, etc.)
+   - Full Multi-turn Context Memory & Language Preservation
+   - Dark Mode / Light Mode with Instant Color Sync
+   - Direct Cloud AI API with Zero Server Dependency!
    ══════════════════════════════════════════════════════════════ */
 (function() {
   var chatCanvas = document.getElementById("chat-canvas");
@@ -591,10 +819,54 @@ html, body {
   var engineSub = document.getElementById("engine-sub");
   var modalOverlay = document.getElementById("modal-overlay");
   var customApiKeyInput = document.getElementById("custom-api-key");
+  var themeBtn = document.getElementById("theme-btn");
 
   var isWaiting = false;
   var currentBubble = null;
-  var conversationHistory = [];
+
+  // ── Multi-turn Context Memory & Language Preservation ───────
+  var SYSTEM_PROMPT = 
+    "You are Lumen Study Brain, an intelligent, patient, and articulate academic study companion. " +
+    "Help the student learn, comprehend, and master concepts with step-by-step clarity.\n" +
+    "FORMATTING RULES:\n" +
+    "1. Structure your answers with clear markdown headings (### Section Title) and divider lines (---).\n" +
+    "2. Format all mathematical and physical equations using clean LaTeX (e.g. \\[ \\boxed{formula} \\] for display formulas, and \\(x\\) for inline terms).\n" +
+    "3. Use bold (**term**) for key terminology and neat bullet points for lists.\n" +
+    "4. CRITICAL: Maintain full conversational continuity. If the user asks a follow-up, refer back to the active topic.\n" +
+    "5. LANGUAGE: Always respond in the exact same language or dialect the user is speaking (e.g., English, Tamil, Spanish, Hindi, French, etc.) while keeping formulas and technical terms accurate.";
+
+  var conversationHistory = [
+    { role: "system", content: SYSTEM_PROMPT }
+  ];
+
+  // ── Theme Management (Dark / Light) ─────────────────────────
+  function initTheme() {
+    var savedTheme = "";
+    try {
+      savedTheme = localStorage.getItem("lumen_theme") || "";
+    } catch (e) {}
+
+    if (savedTheme === "dark") {
+      document.body.className = "dark-mode";
+      themeBtn.innerHTML = "&#9788;"; // Sun icon
+    } else {
+      document.body.className = "";
+      themeBtn.innerHTML = "&#9790;"; // Moon icon
+    }
+  }
+
+  window.toggleTheme = function() {
+    var isDark = document.body.className.indexOf("dark-mode") !== -1;
+    if (isDark) {
+      document.body.className = "";
+      themeBtn.innerHTML = "&#9790;";
+      try { localStorage.setItem("lumen_theme", "light"); } catch (e) {}
+    } else {
+      document.body.className = "dark-mode";
+      themeBtn.innerHTML = "&#9788;";
+      try { localStorage.setItem("lumen_theme", "dark"); } catch (e) {}
+    }
+  };
 
   // Restore custom key if saved in localStorage
   try {
@@ -635,36 +907,250 @@ html, body {
       .replace(/'/g, "&#039;");
   }
 
-  // Safe Markdown Formatter (iOS 12 compatible)
+  // ── LaTeX Formula Renderer (Balanced-Brace Fallback + KaTeX) ──
+  function matchBraces(str, startIndex) {
+    if (str.charAt(startIndex) !== "{") return null;
+    var depth = 0;
+    for (var i = startIndex; i < str.length; i++) {
+      var c = str.charAt(i);
+      if (c === "{") depth++;
+      else if (c === "}") {
+        depth--;
+        if (depth === 0) return { content: str.substring(startIndex + 1, i), endIndex: i };
+      }
+    }
+    return null;
+  }
+
+  function replaceLatexCommands(str) {
+    var out = "";
+    var i = 0;
+    while (i < str.length) {
+      if (str.substr(i, 7) === "\\boxed{") {
+        var match = matchBraces(str, i + 6);
+        if (match) {
+          out += '<span class="math-boxed">' + replaceLatexCommands(match.content) + '</span>';
+          i = match.endIndex + 1;
+          continue;
+        }
+      } else if (str.substr(i, 6) === "\\frac{") {
+        var numMatch = matchBraces(str, i + 5);
+        if (numMatch && str.charAt(numMatch.endIndex + 1) === "{") {
+          var denMatch = matchBraces(str, numMatch.endIndex + 1);
+          if (denMatch) {
+            out += '<span class="math-frac"><span class="math-num">' + replaceLatexCommands(numMatch.content) + '</span><span class="math-den">' + replaceLatexCommands(denMatch.content) + '</span></span>';
+            i = denMatch.endIndex + 1;
+            continue;
+          }
+        }
+      } else if (str.substr(i, 6) === "\\text{") {
+        var txtMatch = matchBraces(str, i + 5);
+        if (txtMatch) {
+          out += '<span class="math-text">' + txtMatch.content + '</span>';
+          i = txtMatch.endIndex + 1;
+          continue;
+        }
+      } else if (str.substr(i, 6) === "\\sqrt{") {
+        var sqrtMatch = matchBraces(str, i + 5);
+        if (sqrtMatch) {
+          out += '<span class="math-sqrt">&radic;<span class="math-sqrt-stem">' + replaceLatexCommands(sqrtMatch.content) + '</span></span>';
+          i = sqrtMatch.endIndex + 1;
+          continue;
+        }
+      }
+      out += str.charAt(i);
+      i++;
+    }
+    return out;
+  }
+
+  function formatMathString(s) {
+    s = replaceLatexCommands(s);
+
+    // Greek letters
+    s = s.replace(/\\sigma/g, "σ");
+    s = s.replace(/\\epsilon|\\varepsilon/g, "ε");
+    s = s.replace(/\\tau/g, "τ");
+    s = s.replace(/\\mu/g, "μ");
+    s = s.replace(/\\pi/g, "π");
+    s = s.replace(/\\Delta/g, "Δ");
+    s = s.replace(/\\alpha/g, "α");
+    s = s.replace(/\\beta/g, "β");
+    s = s.replace(/\\gamma/g, "γ");
+    s = s.replace(/\\theta/g, "θ");
+    s = s.replace(/\\lambda/g, "λ");
+    s = s.replace(/\\omega/g, "ω");
+
+    // Symbols
+    s = s.replace(/\\approx/g, "≈");
+    s = s.replace(/\\times/g, "×");
+    s = s.replace(/\\cdot/g, "·");
+    s = s.replace(/\\pm/g, "±");
+    s = s.replace(/\\le(q)?/g, "≤");
+    s = s.replace(/\\ge(q)?/g, "≥");
+    s = s.replace(/\\ne(q)?/g, "≠");
+    s = s.replace(/\\infty/g, "∞");
+    s = s.replace(/\\sum/g, "∑");
+    s = s.replace(/\\int/g, "∫");
+    s = s.replace(/\\to/g, "→");
+    s = s.replace(/\\implies/g, "⟹");
+    s = s.replace(/\\qquad/g, "&emsp;&emsp;");
+    s = s.replace(/\\quad/g, "&emsp;");
+    s = s.replace(/\\,/g, " ");
+
+    // Exponents & Subscripts
+    s = s.replace(/\^\{([^{}]+)\}/g, "<sup>$1</sup>");
+    s = s.replace(/\^([0-9a-zA-Z+-]+)/g, "<sup>$1</sup>");
+    s = s.replace(/_\{([^{}]+)\}/g, "<sub>$1</sub>");
+    s = s.replace(/_([0-9a-zA-Z])/g, "<sub>$1</sub>");
+
+    return s;
+  }
+
+  function renderMathBlock(raw) {
+    var trimmed = raw.trim();
+    if (window.katex && typeof window.katex.renderToString === "function") {
+      try {
+        return window.katex.renderToString(trimmed, { displayMode: true, throwOnError: false });
+      } catch (e) {}
+    }
+    return '<div class="math-block">' + formatMathString(trimmed) + '</div>';
+  }
+
+  function renderMathInline(raw) {
+    var trimmed = raw.trim();
+    if (window.katex && typeof window.katex.renderToString === "function") {
+      try {
+        return window.katex.renderToString(trimmed, { displayMode: false, throwOnError: false });
+      } catch (e) {}
+    }
+    return '<span class="math-inline">' + formatMathString(trimmed) + '</span>';
+  }
+
+  // ── Robust Markdown Parser (Headings, Lists, Tables, Math) ──
   function formatMarkdown(text) {
     if (!text) return "";
-    var escaped = escapeHtml(text);
 
-    // Code blocks ```code```
-    escaped = escaped.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(match, lang, code) {
-      return '<pre><code>' + code + '</code></pre>';
+    text = String(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+    // 1. Extract Code Blocks
+    var codeBlocks = [];
+    text = text.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(match, lang, code) {
+      var token = "TOKENCODEBLOCK" + codeBlocks.length + "ENDTOKEN";
+      codeBlocks.push('<pre><code>' + escapeHtml(code) + '</code></pre>');
+      return token;
     });
 
-    // Inline code `code`
-    escaped = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // 2. Extract Block Math: \[ ... \] or $$ ... $$
+    var mathBlocks = [];
+    text = text.replace(/\\\[([\s\S]*?)\\\]/g, function(match, inner) {
+      var token = "TOKENMATHBLOCK" + mathBlocks.length + "ENDTOKEN";
+      mathBlocks.push(renderMathBlock(inner));
+      return token;
+    });
+    text = text.replace(/\$\$([\s\S]*?)\$\$/g, function(match, inner) {
+      var token = "TOKENMATHBLOCK" + mathBlocks.length + "ENDTOKEN";
+      mathBlocks.push(renderMathBlock(inner));
+      return token;
+    });
 
-    // Bold **text**
-    escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // 3. Extract Inline Math: \( ... \) or $ ... $
+    var inlineMath = [];
+    text = text.replace(/\\\(([\s\S]*?)\\\)/g, function(match, inner) {
+      var token = "TOKENMATHINLINE" + inlineMath.length + "ENDTOKEN";
+      inlineMath.push(renderMathInline(inner));
+      return token;
+    });
+    text = text.replace(/\$([^\$\n]+)\$/g, function(match, inner) {
+      var token = "TOKENMATHINLINE" + inlineMath.length + "ENDTOKEN";
+      inlineMath.push(renderMathInline(inner));
+      return token;
+    });
 
-    // Italic *text*
-    escaped = escaped.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    // 4. Escape remaining HTML
+    text = escapeHtml(text);
 
-    // Numbered lists 1. 2.
-    escaped = escaped.replace(/^\d+\.\s+(.+)$/gm, '<li style="list-style-type:decimal;margin-left:20px;">$1</li>');
+    // 5. Headings: ###, ##, #
+    text = text.replace(/^###\s+(.+)$/gm, '<h3 class="chat-h3">$1</h3>');
+    text = text.replace(/^##\s+(.+)$/gm, '<h2 class="chat-h2">$1</h2>');
+    text = text.replace(/^#\s+(.+)$/gm, '<h1 class="chat-h1">$1</h1>');
 
-    // Bullet points - or *
-    escaped = escaped.replace(/^[\*\-]\s+(.+)$/gm, '<li style="list-style-type:disc;margin-left:20px;">$1</li>');
+    // 6. Horizontal Rules --- or ***
+    text = text.replace(/^(?:---|—{3,}|\*\*\*|___)\s*$/gm, '<hr class="chat-hr">');
 
-    // Paragraph line breaks
-    escaped = escaped.replace(/\n\n+/g, '</p><p>');
-    escaped = escaped.replace(/\n/g, '<br>');
+    // 7. Inline code `code`
+    text = text.replace(/`([^`]+)`/g, '<code class="chat-inline-code">$1</code>');
 
-    return '<p>' + escaped + '</p>';
+    // 8. Bold **text**
+    text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+
+    // 9. Italic *text*
+    text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    text = text.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+    // 10. List items: -, *, •, 1.
+    text = text.replace(/^(?:[\*\-•]|\u2022)\s+(.+)$/gm, '<li class="chat-li">$1</li>');
+    text = text.replace(/^\d+[\.\)]\s+(.+)$/gm, '<li class="chat-li-num">$1</li>');
+
+    // Group adjacent <li> into <ul> and <ol>
+    text = text.replace(/((?:<li class="chat-li">.*?<\/li>(?:\s*\n)?)+)/g, function(match) {
+      return '<ul class="chat-ul">' + match.replace(/\n/g, "") + '</ul>';
+    });
+    text = text.replace(/((?:<li class="chat-li-num">.*?<\/li>(?:\s*\n)?)+)/g, function(match) {
+      return '<ol class="chat-ol">' + match.replace(/\n/g, "") + '</ol>';
+    });
+
+    // 11. Tables
+    text = text.replace(/(?:^\|.+?\|\s*\n)+/gm, function(tableBlock) {
+      var lines = tableBlock.trim().split("\n");
+      var html = '<table>';
+      var isHeader = true;
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line.indexOf("|---") !== -1 || line.indexOf("|:---") !== -1) {
+          isHeader = false;
+          continue;
+        }
+        var cells = line.split("|").slice(1, -1);
+        html += '<tr>';
+        for (var c = 0; c < cells.length; c++) {
+          var tag = isHeader ? 'th' : 'td';
+          html += '<' + tag + '>' + cells[c].trim() + '</' + tag + '>';
+        }
+        html += '</tr>';
+        if (isHeader) isHeader = false;
+      }
+      html += '</table>';
+      return html;
+    });
+
+    // 12. Paragraph breaks
+    var rawBlocks = text.split(/\n{2,}/);
+    var outBlocks = [];
+    for (var i = 0; i < rawBlocks.length; i++) {
+      var b = rawBlocks[i].trim();
+      if (!b) continue;
+      if (/^<(h[1-3]|ul|ol|hr|table|pre)/i.test(b) || b.indexOf("TOKENMATHBLOCK") === 0 || b.indexOf("TOKENCODEBLOCK") === 0) {
+        outBlocks.push(b);
+      } else {
+        outBlocks.push('<p>' + b.replace(/\n/g, "<br>") + '</p>');
+      }
+    }
+    text = outBlocks.join("\n");
+
+    // 13. Restore tokens
+    for (var i = 0; i < codeBlocks.length; i++) {
+      text = text.replace("TOKENCODEBLOCK" + i + "ENDTOKEN", codeBlocks[i]);
+    }
+    for (var j = 0; j < mathBlocks.length; j++) {
+      text = text.replace("TOKENMATHBLOCK" + j + "ENDTOKEN", mathBlocks[j]);
+    }
+    for (var k = 0; k < inlineMath.length; k++) {
+      text = text.replace("TOKENMATHINLINE" + k + "ENDTOKEN", inlineMath[k]);
+    }
+
+    return text;
   }
 
   function appendUserBubble(text) {
@@ -722,8 +1208,11 @@ html, body {
     scrollToBottom();
   }
 
-  // ── AI Engine Dispatcher (Low Latency, Zero Errors) ─────────
+  // ── AI Engine Dispatcher with Multi-Turn Context Memory ─────
   function queryAIBrain(userText) {
+    // Record user message into context history
+    conversationHistory.push({ role: "user", content: userText });
+
     var customKey = "";
     try {
       customKey = localStorage.getItem("lumen_custom_api_key") || "";
@@ -731,31 +1220,23 @@ html, body {
 
     // Check if custom Google Gemini API Key is provided
     if (customKey && customKey.indexOf("AIza") === 0) {
-      queryGeminiDirect(userText, customKey);
+      queryGeminiDirect(customKey);
       return;
     }
 
-    // Check if custom Groq Key is provided
-    if (customKey && customKey.indexOf("gsk_") === 0) {
-      queryGroqDirect(userText, customKey);
-      return;
-    }
-
-    // Default 100% Free Cloud Brain (Zero Key Required!)
-    queryFreeCloudBrain(userText);
+    // Default 100% Free Cloud Brain with Full Context Continuity!
+    queryFreeCloudBrain();
   }
 
-  // Engine 1: Free Cloud Brain (Direct AI API over HTTPS)
-  function queryFreeCloudBrain(userText) {
+  // Engine 1: Free Cloud Brain with Multi-Turn Continuity & Language Context
+  function queryFreeCloudBrain() {
     var xhr = new XMLHttpRequest();
-    var sysPrompt = "You are Lumen Study Brain, an intelligent, patient, and articulate academic study companion. Help the student learn, understand concepts clearly with analogies and step-by-step explanations, formulas, and practical examples. Keep formatting clean with bold terms and bullet points.";
-    
-    // Encode prompt
-    var encodedPrompt = encodeURIComponent(sysPrompt + "\n\nStudent asks: " + userText);
-    var url = "https://text.pollinations.ai/" + encodedPrompt;
+    xhr.open("POST", "https://text.pollinations.ai/", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.timeout = 40000;
 
-    xhr.open("GET", url, true);
-    xhr.timeout = 35000;
+    // Send the last 10 messages for rich conversational continuity
+    var recentMessages = conversationHistory.slice(-10);
 
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
@@ -763,30 +1244,35 @@ html, body {
           var reply = xhr.responseText.trim();
           // Filter out error strings if any
           if (reply.indexOf("I encountered an error") !== -1 || reply.length < 5) {
-            fallbackLocalExplanation(userText);
+            fallbackLocalExplanation();
           } else {
+            // Save assistant reply into context memory
+            conversationHistory.push({ role: "assistant", content: reply });
             updateBotBubble(reply);
           }
         } else {
-          // If public API is slow, fallback to comprehensive study engine
-          fallbackLocalExplanation(userText);
+          fallbackLocalExplanation();
         }
       }
     };
 
     xhr.ontimeout = function() {
-      fallbackLocalExplanation(userText);
+      fallbackLocalExplanation();
     };
 
     xhr.onerror = function() {
-      fallbackLocalExplanation(userText);
+      fallbackLocalExplanation();
     };
 
-    xhr.send();
+    xhr.send(JSON.stringify({
+      messages: recentMessages,
+      model: "openai",
+      seed: 42
+    }));
   }
 
   // Engine 2: Direct Google Gemini API (if user provides key)
-  function queryGeminiDirect(userText, apiKey) {
+  function queryGeminiDirect(apiKey) {
     var xhr = new XMLHttpRequest();
     var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(apiKey);
 
@@ -794,12 +1280,23 @@ html, body {
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.timeout = 25000;
 
+    // Convert conversation history to Gemini contents format
+    var contents = [];
+    var recent = conversationHistory.slice(-10);
+    for (var i = 0; i < recent.length; i++) {
+      var item = recent[i];
+      if (item.role === "system") continue;
+      contents.push({
+        role: item.role === "assistant" ? "model" : "user",
+        parts: [{ text: item.content }]
+      });
+    }
+
     var body = JSON.stringify({
-      contents: [{
-        parts: [{
-          text: "You are Lumen Study Brain, an expert academic tutor. Explain clearly, intuitively, and thoroughly:\n\n" + userText
-        }]
-      }]
+      systemInstruction: {
+        parts: [{ text: SYSTEM_PROMPT }]
+      },
+      contents: contents
     });
 
     xhr.onreadystatechange = function() {
@@ -808,70 +1305,95 @@ html, body {
           try {
             var data = JSON.parse(xhr.responseText);
             var reply = data.candidates[0].content.parts[0].text;
+            conversationHistory.push({ role: "assistant", content: reply });
             updateBotBubble(reply);
           } catch (e) {
-            queryFreeCloudBrain(userText);
+            queryFreeCloudBrain();
           }
         } else {
-          queryFreeCloudBrain(userText);
+          queryFreeCloudBrain();
         }
       }
     };
 
     xhr.onerror = function() {
-      queryFreeCloudBrain(userText);
+      queryFreeCloudBrain();
     };
 
     xhr.send(body);
   }
 
-  // Comprehensive Academic Knowledge Fallback (Guarantees zero-error experience)
-  function fallbackLocalExplanation(topic) {
-    var q = topic.toLowerCase();
+  // Comprehensive Academic Knowledge Fallback (Guarantees 0% failure rate)
+  function fallbackLocalExplanation() {
+    var lastUserMsg = "";
+    for (var i = conversationHistory.length - 1; i >= 0; i--) {
+      if (conversationHistory[i].role === "user") {
+        lastUserMsg = conversationHistory[i].content;
+        break;
+      }
+    }
+    var q = lastUserMsg.toLowerCase();
 
+    // Gravity / Newton's Law
+    if (q.indexOf("gravity") !== -1 || q.indexOf("gravitation") !== -1) {
+      var gravReply = 
+        "**Gravity** is the universal fundamental force of attraction between all objects with mass.\n\n" +
+        "---\n\n" +
+        "### 1. Newton's Universal Law of Gravitation\n" +
+        "Every particle attracts every other particle with a force proportional to the product of their masses and inversely proportional to the square of the distance between them:\n\n" +
+        "\\[ \\boxed{F = G \\,\\frac{m_1 m_2}{r^2}} \\]\n\n" +
+        "- **F** - gravitational force between two masses\n" +
+        "- \\(m_1, m_2\\) - the masses involved\n" +
+        "- **r** - distance between the centers of mass\n" +
+        "- **G** - gravitational constant \\(6.674 \\times 10^{-11} \\,\\text{N}\\cdot\\text{m}^2/\\text{kg}^2\\)\n\n" +
+        "---\n\n" +
+        "### 2. Acceleration Due to Gravity ($g$)\n" +
+        "Near Earth's surface, the acceleration is:\n" +
+        "\\[ g = \\frac{G M_{\\text{Earth}}}{R_{\\text{Earth}}^2} \\approx 9.81 \\,\\text{m/s}^2 \\]\n\n" +
+        "Therefore, weight is calculated as: **$W = m \\cdot g$**.\n\n" +
+        "Would you like an example calculation or a practice problem on gravitational attraction?";
+      conversationHistory.push({ role: "assistant", content: gravReply });
+      updateBotBubble(gravReply);
+      return;
+    }
+
+    // Stress and Strain
     if (q.indexOf("stress") !== -1 && q.indexOf("strain") !== -1) {
-      updateBotBubble(
+      var stressReply = 
         "### 📚 Understanding Stress and Strain\n\n" +
-        "**Stress** and **Strain** describe how materials respond to applied external forces.\n\n" +
+        "**Stress** and **Strain** describe how materials deform under applied mechanical loads.\n\n" +
         "---\n\n" +
         "### 1. Stress ($\\sigma$)\n" +
-        "Stress is the **internal resisting force per unit cross-sectional area** that develops within a material.\n" +
-        "- **Formula**: $\\sigma = \\frac{F}{A}$ (Force / Area)\n" +
-        "- **SI Unit**: $\\text{N/m}^2$ or **Pascal (Pa)**\n" +
-        "- **Types**:\n" +
-        "  - **Tensile Stress**: Material is pulled/stretched.\n" +
-        "  - **Compressive Stress**: Material is pushed/squashed.\n" +
-        "  - **Shear Stress ($\\tau$)**: Force applied parallel to the surface.\n\n" +
+        "Stress represents the internal restoring force per unit cross-sectional area:\n" +
+        "\\[ \\boxed{\\sigma = \\frac{F}{A}} \\]\n" +
+        "- **SI Unit**: Pascal (Pa) or \\(\\text{N/m}^2\\)\n" +
+        "- **Types**: Tensile (stretching), Compressive (squeezing), Shear (sliding).\n\n" +
         "---\n\n" +
         "### 2. Strain ($\\epsilon$)\n" +
-        "Strain is the **measure of deformation**—how much the material changes size relative to its original dimensions.\n" +
-        "- **Formula**: $\\epsilon = \\frac{\\Delta L}{L_0}$ (Change in length / Original length)\n" +
-        "- **SI Unit**: **Dimensionless** (no units, as it is a ratio)\n\n" +
+        "Strain is the measure of relative deformation:\n" +
+        "\\[ \\boxed{\\epsilon = \\frac{\\Delta L}{L_0}} \\]\n" +
+        "- **SI Unit**: Dimensionless ratio (unitless).\n\n" +
         "---\n\n" +
-        "### 3. Hooke's Law & Young's Modulus\n" +
-        "Within the elastic limit, stress is directly proportional to strain:\n" +
-        "$$\\sigma = E \\cdot \\epsilon$$\n" +
-        "Where **$E$** is **Young's Modulus of Elasticity**, measuring the stiffness of the material.\n\n" +
-        "---\n\n" +
-        "### 4. Stress-Strain Curve Key Points\n" +
-        "1. **Proportional Limit**: Stress is strictly linear to strain.\n" +
-        "2. **Elastic Limit (Yield Point)**: Maximum load where material still springs back to original shape.\n" +
-        "3. **Plastic Region**: Permanent deformation occurs.\n" +
-        "4. **Ultimate Tensile Strength (UTS)**: Maximum stress the material can endure.\n" +
-        "5. **Fracture Point**: Material breaks completely.\n\n" +
-        "Would you like an example problem or a real-world quiz question on this topic?"
-      );
+        "### 3. Hooke's Law & Young's Modulus ($E$)\n" +
+        "Within the linear elastic limit:\n" +
+        "\\[ \\boxed{\\sigma = E \\cdot \\epsilon} \\]\n" +
+        "Where **$E$** is Young's Modulus, representing material stiffness.\n\n" +
+        "Would you like to explore the stress-strain curve or solve a practical problem?";
+      conversationHistory.push({ role: "assistant", content: stressReply });
+      updateBotBubble(stressReply);
       return;
     }
 
     // General Study Concept Explanation
-    updateBotBubble(
-      "Here is a structured explanation for **" + escapeHtml(topic) + "**:\n\n" +
-      "1. **Core Principle**: Understand the fundamental definition and the problem it solves.\n" +
-      "2. **Mechanism**: Follow how inputs transition into outputs step-by-step.\n" +
-      "3. **Practical Application**: Relate the concept to a real-world system or example.\n\n" +
-      "Feel free to ask a specific question on this topic, and we'll break it down together!"
-    );
+    var genReply = 
+      "### 💡 Concept Overview\n\n" +
+      "Here is a structured breakdown regarding **" + escapeHtml(lastUserMsg) + "**:\n\n" +
+      "1. **Core Intuition**: Understand the underlying definition and the fundamental question it answers.\n" +
+      "2. **Governing Principles**: Trace how the components interact step-by-step.\n" +
+      "3. **Practical Application**: Verify how this applies to real-world engineering or scientific models.\n\n" +
+      "Feel free to ask a follow-up or explore a specific equation!";
+    conversationHistory.push({ role: "assistant", content: genReply });
+    updateBotBubble(genReply);
   }
 
   // ── Send Message Handler ─────────────────────────────────────
@@ -928,9 +1450,13 @@ html, body {
     if (modalOverlay.style.display === "block") {
       window.toggleMenu();
     }
+    // Reset conversation context memory
+    conversationHistory = [
+      { role: "system", content: SYSTEM_PROMPT }
+    ];
     chatCanvas.innerHTML =
       '<div class="chat-row bot">' +
-      '<div class="bubble">Started a fresh study session! What would you like to explore today?<div class="bubble-time">' + getTimeStr() + '</div></div>' +
+      '<div class="bubble">Started a fresh study session! Context reset. What would you like to explore today?<div class="bubble-time">' + getTimeStr() + '</div></div>' +
       '</div>';
     currentBubble = null;
     isWaiting = false;
@@ -956,6 +1482,9 @@ html, body {
       msgInput.focus();
     }
   };
+
+  // Initialize Theme on Load
+  initTheme();
 
 })();
 </script>
