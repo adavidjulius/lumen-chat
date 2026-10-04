@@ -207,9 +207,11 @@ html, body {
 .theme-toggle-btn {
   background: transparent;
   border: none;
-  font-size: 19px;
+  font-size: 20px;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
+  min-width: 36px;
+  min-height: 36px;
   color: #ffffff;
   display: -webkit-flex;
   display: flex;
@@ -217,6 +219,11 @@ html, body {
   align-items: center;
   -webkit-justify-content: center;
   justify-content: center;
+  border-radius: 50%;
+}
+
+.theme-toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .theme-toggle-btn:active {
@@ -329,6 +336,14 @@ html, body {
   font-size: 16px;
   font-weight: 600;
   margin: 10px 0 4px 0;
+  color: var(--heading-color);
+  line-height: 1.35;
+}
+
+.bubble h4.chat-h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 8px 0 4px 0;
   color: var(--heading-color);
   line-height: 1.35;
 }
@@ -1009,9 +1024,13 @@ body.dark-mode .katex {
 
   function renderMathBlock(raw) {
     var trimmed = raw.trim();
+    trimmed = trimmed.replace(/\\cdot([a-zA-Z])/g, "\\cdot $1");
     if (window.katex && typeof window.katex.renderToString === "function") {
       try {
-        return window.katex.renderToString(trimmed, { displayMode: true, throwOnError: false });
+        var res = window.katex.renderToString(trimmed, { displayMode: true, throwOnError: false });
+        if (res.indexOf("katex-error") === -1) {
+          return res;
+        }
       } catch (e) {}
     }
     return '<div class="math-block">' + formatMathString(trimmed) + '</div>';
@@ -1019,9 +1038,13 @@ body.dark-mode .katex {
 
   function renderMathInline(raw) {
     var trimmed = raw.trim();
+    trimmed = trimmed.replace(/\\cdot([a-zA-Z])/g, "\\cdot $1");
     if (window.katex && typeof window.katex.renderToString === "function") {
       try {
-        return window.katex.renderToString(trimmed, { displayMode: false, throwOnError: false });
+        var res = window.katex.renderToString(trimmed, { displayMode: false, throwOnError: false });
+        if (res.indexOf("katex-error") === -1) {
+          return res;
+        }
       } catch (e) {}
     }
     return '<span class="math-inline">' + formatMathString(trimmed) + '</span>';
@@ -1070,7 +1093,8 @@ body.dark-mode .katex {
     // 4. Escape remaining HTML
     text = escapeHtml(text);
 
-    // 5. Headings: ###, ##, #
+    // 5. Headings: ####, ###, ##, #
+    text = text.replace(/^####\s+(.+)$/gm, '<h4 class="chat-h4">$1</h4>');
     text = text.replace(/^###\s+(.+)$/gm, '<h3 class="chat-h3">$1</h3>');
     text = text.replace(/^##\s+(.+)$/gm, '<h2 class="chat-h2">$1</h2>');
     text = text.replace(/^#\s+(.+)$/gm, '<h1 class="chat-h1">$1</h1>');
