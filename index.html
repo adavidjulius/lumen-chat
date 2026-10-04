@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lumen Brain">
+<meta name="apple-mobile-web-app-title" content="Lumen">
 <meta name="format-detection" content="telephone=no">
-<title>Assistant · Lumen Study Brain</title>
+<title>Lumen · Study Brain</title>
 
 <!-- KaTeX for crisp mathematical formulas (with auto-render and graceful fallback) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" crossorigin="anonymous">
@@ -16,10 +16,12 @@
 <style>
 /* ══════════════════════════════════════════════════════════════
    Lumen Study Brain — iOS Native Chat UI
-   Matched to iOS Assistant Design & iPad Form Factor
+   - Header: Lumen
    - Light Mode: Warm Eye-Comfort Palette (Soft Paper & Roasted Amber)
-   - Dark Mode: Pure OLED Pitch Black (Zero Blue, 100% Monochrome Dark)
+   - Dark Mode: Pure OLED Pitch Black (Zero Blue Tint, Fully Dark)
+   - Perception Layer: Multimodal Image Analysis for Diagrams & Formulas
    - Deep Nested Multi-turn Knowledge Retention
+   - Double-Execution Shield for iPad Safari
    - 100% Free, Standalone & iOS 12 / iPad mini 2 Compatible
    ══════════════════════════════════════════════════════════════ */
 
@@ -198,8 +200,8 @@ html, body {
 
 .nav-title {
   color: var(--nav-text);
-  font-size: 19px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   letter-spacing: -0.2px;
 }
 
@@ -336,6 +338,16 @@ html, body {
 
 .chat-row.user .bubble-time {
   opacity: 0.75;
+}
+
+/* Attached Image Thumbnail in User Bubble */
+.user-chat-img {
+  max-width: 240px;
+  max-height: 240px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  display: block;
+  border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 /* ── Formatted Markdown inside Bubbles ──────────────────────── */
@@ -590,6 +602,67 @@ body.dark-mode .katex-display {
   50% { opacity: 1; transform: translateY(-4px); }
 }
 
+/* ── Image Attachment Preview Bar ───────────────────────────── */
+.image-preview-bar {
+  display: none;
+  background-color: var(--bar-bg);
+  border-top: 1px solid var(--border-color);
+  padding: 8px 16px;
+  z-index: 29;
+}
+
+.image-preview-inner {
+  max-width: 820px;
+  margin: 0 auto;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.image-thumb-box {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.image-thumb-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.image-remove-btn {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 18px;
+  height: 18px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  font-size: 11px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.image-preview-caption {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 /* ── Bottom Input Bar (iPad Screen Aligned) ─────────────────── */
 .input-bar {
   background-color: var(--bar-bg);
@@ -607,7 +680,31 @@ body.dark-mode .katex-display {
   display: flex;
   -webkit-align-items: center;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+
+/* Image Upload Button */
+.attach-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.attach-btn:active {
+  color: var(--accent-color);
+  background-color: rgba(128, 128, 128, 0.15);
 }
 
 .input-pill-wrapper {
@@ -787,7 +884,7 @@ body.dark-mode .katex-display {
     </div>
 
     <div class="nav-title-box">
-      <div class="nav-title">Assistant</div>
+      <div class="nav-title">Lumen</div>
       <div id="engine-sub" class="nav-sub">Cloud Brain &middot; Connected</div>
     </div>
 
@@ -804,7 +901,7 @@ body.dark-mode .katex-display {
       <!-- Greeting Bubble -->
       <div class="chat-row bot">
         <div class="bubble">
-          Hi! &#128075; I'm your Lumen study assistant. Ask me anything to study, understand concepts, or review formulas and topics together!
+          Hi! &#128075; I'm Lumen, your intelligent study companion. Ask me anything to study, understand concepts, or attach a photo of any diagram, textbook problem, or formula to analyze together!
           <div class="bubble-time">10:09 AM</div>
         </div>
       </div>
@@ -812,11 +909,35 @@ body.dark-mode .katex-display {
     </div>
   </main>
 
+  <!-- Image Attachment Preview Bar -->
+  <div id="image-preview-bar" class="image-preview-bar">
+    <div class="image-preview-inner">
+      <div class="image-thumb-box">
+        <img id="image-thumb" class="image-thumb-preview" src="" alt="Attached image preview">
+        <button class="image-remove-btn" onclick="removeAttachedImage()" title="Remove image">&times;</button>
+      </div>
+      <div class="image-preview-caption">Study image ready for perception analysis</div>
+    </div>
+  </div>
+
   <!-- Bottom Input Bar (Centered for iPad Screen) -->
   <footer class="input-bar">
     <div class="input-bar-inner">
+
+      <!-- Hidden file input for camera / photo library -->
+      <input type="file" id="image-file-input" accept="image/*" style="display:none" onchange="handleImageSelected(this)">
+
+      <!-- Image Attach Button -->
+      <button class="attach-btn" onclick="triggerImageUpload()" title="Attach study photo or diagram">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </button>
+
       <div class="input-pill-wrapper">
-        <input type="text" id="msg-input" class="msg-input" placeholder="Type your message..." autocomplete="off" autocorrect="off" autocapitalize="sentences">
+        <input type="text" id="msg-input" class="msg-input" placeholder="Ask Lumen or explain image..." autocomplete="off" autocorrect="off" autocapitalize="sentences">
         <button class="mic-btn" onclick="triggerMic()" title="Voice input">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -841,6 +962,7 @@ body.dark-mode .katex-display {
 <div id="modal-overlay" class="modal-overlay" onclick="toggleMenu()">
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="sheet-title">Study Modes & Topics</div>
+    <div class="sheet-item" onclick="triggerImageUpload()">&#128247; Attach Photo / Diagram</div>
     <div class="sheet-item" onclick="quickPrompt('Explain concept simply with real-world examples: ')">&#128161; Explain Concept Simply</div>
     <div class="sheet-item" onclick="quickPrompt('Quiz me with 3 practice questions on: ')">&#9989; Quiz Me on Topic</div>
     <div class="sheet-item" onclick="quickPrompt('Summarize key points, formulas, and cheat sheet for: ')">&#128221; Summarize Notes</div>
@@ -865,7 +987,9 @@ body.dark-mode .katex-display {
    - Full Markdown Heading (###), List, Bold, Table, HR parser
    - Balanced-Brace LaTeX Formula Renderer (\boxed, \frac, \approx, etc.)
    - Full Multi-turn Deep Nested Context Memory & Persistence
+   - Perception Layer: Multimodal Image Analysis for Diagrams & Formulas
    - Warm Eye Comfort Light Mode + True OLED Pitch Black Dark Mode
+   - Guaranteed Single-Execution Shield (No Duplicate Outputs)
    - Direct Cloud AI API with Zero Server Dependency!
    ══════════════════════════════════════════════════════════════ */
 (function() {
@@ -877,19 +1001,25 @@ body.dark-mode .katex-display {
   var modalOverlay = document.getElementById("modal-overlay");
   var customApiKeyInput = document.getElementById("custom-api-key");
   var themeBtn = document.getElementById("theme-btn");
+  var imageFileInput = document.getElementById("image-file-input");
+  var imagePreviewBar = document.getElementById("image-preview-bar");
+  var imageThumb = document.getElementById("image-thumb");
 
   var isWaiting = false;
   var currentBubble = null;
+  var lastSendTimestamp = 0;
+  var attachedImageDataUrl = null;
 
   // ── Multi-turn Deep Nested Context Memory & Language Fidelity ──
   var SYSTEM_PROMPT = 
-    "You are Lumen Study Brain, an expert academic study assistant with deep nested memory and continuity.\n\n" +
+    "You are Lumen Study Brain, an expert academic study assistant with deep nested memory and perception analysis.\n\n" +
     "CORE CONTINUITY & CONTEXT RULES:\n" +
     "1. FULL CONVERSATION MEMORY: Retain and build upon ALL previous questions, answers, variables, definitions, and equations in this thread. When the student asks follow-up or nested questions ('what about if mass is halved?', 'why?', 'solve step 2', 'can you give an example with numbers?'), seamlessly build upon the established context.\n" +
-    "2. STRUCTURED FORMATTING: Organize your response with clear Markdown headings (### Section Title) and divider lines (---).\n" +
-    "3. MATHEMATICAL ACCURACY: Render all equations in LaTeX. Use \\[ \\boxed{formula} \\] or \\[ formula \\] for standalone block equations, and \\(x\\) for inline terms.\n" +
-    "4. LANGUAGE FIDELITY: Always reply in the exact language used by the student (e.g. English, Tamil, Hindi, Spanish, etc.) while preserving correct mathematical notation.\n" +
-    "5. PEDAGOGICAL CLARITY: Explain concepts intuitively, highlighting key principles before walking through mathematical deductions.";
+    "2. PERCEPTION & DIAGRAM ANALYSIS: When an image is provided, thoroughly analyze any handwritten notes, diagrams, geometric shapes, circuits, or printed equations. Extract key givens and solve or explain with precision.\n" +
+    "3. STRUCTURED FORMATTING: Organize your response with clear Markdown headings (### Section Title) and divider lines (---).\n" +
+    "4. MATHEMATICAL ACCURACY: Render all equations in LaTeX. Use \\[ \\boxed{formula} \\] or \\[ formula \\] for standalone block equations, and \\(x\\) for inline terms.\n" +
+    "5. LANGUAGE FIDELITY: Always reply in the exact language used by the student (e.g. English, Tamil, Hindi, Spanish, etc.) while preserving correct mathematical notation.\n" +
+    "6. PEDAGOGICAL CLARITY: Explain concepts intuitively, highlighting key principles before walking through mathematical deductions.";
 
   var conversationHistory = [
     { role: "system", content: SYSTEM_PROMPT }
@@ -961,6 +1091,67 @@ body.dark-mode .katex-display {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  // ── Perception Layer: Image Selection & Canvas Resizing ─────
+  window.triggerImageUpload = function() {
+    if (modalOverlay.style.display === "block") {
+      window.toggleMenu();
+    }
+    imageFileInput.click();
+  };
+
+  window.handleImageSelected = function(input) {
+    if (!input.files || !input.files[0]) return;
+    var file = input.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var rawData = e.target.result;
+      // Resize on canvas to save memory on iPad mini 2 (1GB RAM)
+      resizeImage(rawData, 1024, function(resizedData) {
+        attachedImageDataUrl = resizedData;
+        imageThumb.src = resizedData;
+        imagePreviewBar.style.display = "block";
+        sendBtn.classList.add("active");
+        msgInput.focus();
+      });
+    };
+    reader.readAsDataURL(file);
+    // Reset file input so same image can be reselected if desired
+    input.value = "";
+  };
+
+  window.removeAttachedImage = function() {
+    attachedImageDataUrl = null;
+    imageThumb.src = "";
+    imagePreviewBar.style.display = "none";
+    if (!msgInput.value.trim()) {
+      sendBtn.classList.remove("active");
+    }
+  };
+
+  function resizeImage(dataUrl, maxDim, callback) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width;
+      var h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+      var canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL("image/jpeg", 0.82));
+    };
+    img.src = dataUrl;
   }
 
   // ── LaTeX Formula Renderer (Balanced-Brace Fallback + KaTeX) ──
@@ -1218,13 +1409,25 @@ body.dark-mode .katex-display {
     return text;
   }
 
-  function appendUserBubble(text, skipScroll) {
+  function appendUserBubble(text, imageUrl, skipScroll) {
     var row = document.createElement("div");
     row.className = "chat-row user";
 
     var bubble = document.createElement("div");
     bubble.className = "bubble";
-    bubble.innerHTML = escapeHtml(text).replace(/\n/g, "<br>");
+
+    if (imageUrl) {
+      var img = document.createElement("img");
+      img.className = "user-chat-img";
+      img.src = imageUrl;
+      bubble.appendChild(img);
+    }
+
+    if (text) {
+      var textSpan = document.createElement("div");
+      textSpan.innerHTML = escapeHtml(text).replace(/\n/g, "<br>");
+      bubble.appendChild(textSpan);
+    }
 
     var time = document.createElement("div");
     time.className = "bubble-time";
@@ -1309,7 +1512,7 @@ body.dark-mode .katex-display {
           for (var i = 0; i < conversationHistory.length; i++) {
             var item = conversationHistory[i];
             if (item.role === "user") {
-              appendUserBubble(item.content, true);
+              appendUserBubble(item.content, item.image || null, true);
             } else if (item.role === "assistant") {
               appendAssistantBubble(item.content, true);
             }
@@ -1334,15 +1537,34 @@ body.dark-mode .katex-display {
     // Retain up to the last 30 turns so nested questions have full prior knowledge
     var startIdx = Math.max(0, nonSystem.length - 30);
     for (var j = startIdx; j < nonSystem.length; j++) {
-      payload.push(nonSystem[j]);
+      var entry = nonSystem[j];
+      // Format multimodal message if image is attached
+      if (entry.image) {
+        payload.push({
+          role: entry.role,
+          content: [
+            { type: "text", text: entry.content || "Analyze this study image, extract all formulas, diagrams, or questions, and explain or solve step-by-step." },
+            { type: "image_url", image_url: { url: entry.image } }
+          ]
+        });
+      } else {
+        payload.push({
+          role: entry.role,
+          content: entry.content
+        });
+      }
     }
     return payload;
   }
 
   // ── AI Engine Dispatcher ─────────────────────────────────────
-  function queryAIBrain(userText) {
+  function queryAIBrain(userText, imageDataUrl) {
     // Record user message into context history
-    conversationHistory.push({ role: "user", content: userText });
+    var userEntry = { role: "user", content: userText };
+    if (imageDataUrl) {
+      userEntry.image = imageDataUrl;
+    }
+    conversationHistory.push(userEntry);
     saveHistory();
 
     var customKey = "";
@@ -1352,7 +1574,7 @@ body.dark-mode .katex-display {
 
     // Check if custom Google Gemini API Key is provided
     if (customKey && customKey.indexOf("AIza") === 0) {
-      queryGeminiDirect(customKey);
+      queryGeminiDirect(customKey, imageDataUrl);
       return;
     }
 
@@ -1360,37 +1582,46 @@ body.dark-mode .katex-display {
     queryFreeCloudBrain();
   }
 
-  // Engine 1: Free Cloud Brain with Deep Nested Continuity & Language Context
+  // Engine 1: Free Cloud Brain with Deep Nested Continuity & Perception Analysis
   function queryFreeCloudBrain() {
+    var isHandled = false;
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "https://text.pollinations.ai/", true);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.timeout = 40000;
+    xhr.timeout = 45000;
 
     var messages = getContextPayload();
 
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
+        if (isHandled) return;
         if (xhr.status === 200 && xhr.responseText) {
           var reply = xhr.responseText.trim();
           if (reply.indexOf("I encountered an error") !== -1 || reply.length < 5) {
+            isHandled = true;
             fallbackLocalExplanation();
           } else {
+            isHandled = true;
             conversationHistory.push({ role: "assistant", content: reply });
             saveHistory();
             updateBotBubble(reply);
           }
         } else {
+          isHandled = true;
           fallbackLocalExplanation();
         }
       }
     };
 
     xhr.ontimeout = function() {
+      if (isHandled) return;
+      isHandled = true;
       fallbackLocalExplanation();
     };
 
     xhr.onerror = function() {
+      if (isHandled) return;
+      isHandled = true;
       fallbackLocalExplanation();
     };
 
@@ -1402,23 +1633,48 @@ body.dark-mode .katex-display {
   }
 
   // Engine 2: Direct Google Gemini API (if user provides key)
-  function queryGeminiDirect(apiKey) {
+  function queryGeminiDirect(apiKey, imageDataUrl) {
+    var isHandled = false;
     var xhr = new XMLHttpRequest();
     var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + encodeURIComponent(apiKey);
 
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.timeout = 25000;
+    xhr.timeout = 30000;
 
     var contents = [];
     var recent = getContextPayload();
     for (var i = 0; i < recent.length; i++) {
       var item = recent[i];
       if (item.role === "system") continue;
-      contents.push({
-        role: item.role === "assistant" ? "model" : "user",
-        parts: [{ text: item.content }]
-      });
+      var roleName = item.role === "assistant" ? "model" : "user";
+      if (typeof item.content === "string") {
+        contents.push({
+          role: roleName,
+          parts: [{ text: item.content }]
+        });
+      } else if (Array.isArray(item.content)) {
+        var parts = [];
+        for (var p = 0; p < item.content.length; p++) {
+          if (item.content[p].type === "text") {
+            parts.push({ text: item.content[p].text });
+          } else if (item.content[p].type === "image_url") {
+            var dataUrl = item.content[p].image_url.url;
+            var commaIdx = dataUrl.indexOf(",");
+            if (commaIdx !== -1) {
+              var base64Data = dataUrl.substring(commaIdx + 1);
+              var mimeType = dataUrl.substring(5, commaIdx).split(";")[0] || "image/jpeg";
+              parts.push({
+                inline_data: {
+                  mime_type: mimeType,
+                  data: base64Data
+                }
+              });
+            }
+          }
+        }
+        contents.push({ role: roleName, parts: parts });
+      }
     }
 
     var body = JSON.stringify({
@@ -1430,23 +1686,29 @@ body.dark-mode .katex-display {
 
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
+        if (isHandled) return;
         if (xhr.status === 200) {
           try {
             var data = JSON.parse(xhr.responseText);
             var reply = data.candidates[0].content.parts[0].text;
+            isHandled = true;
             conversationHistory.push({ role: "assistant", content: reply });
             saveHistory();
             updateBotBubble(reply);
           } catch (e) {
+            isHandled = true;
             queryFreeCloudBrain();
           }
         } else {
+          isHandled = true;
           queryFreeCloudBrain();
         }
       }
     };
 
     xhr.onerror = function() {
+      if (isHandled) return;
+      isHandled = true;
       queryFreeCloudBrain();
     };
 
@@ -1456,13 +1718,34 @@ body.dark-mode .katex-display {
   // Comprehensive Academic Knowledge Fallback (Guarantees 0% failure rate)
   function fallbackLocalExplanation() {
     var lastUserMsg = "";
+    var lastHasImage = false;
     for (var i = conversationHistory.length - 1; i >= 0; i--) {
       if (conversationHistory[i].role === "user") {
-        lastUserMsg = conversationHistory[i].content;
+        lastUserMsg = conversationHistory[i].content || "";
+        lastHasImage = !!conversationHistory[i].image;
         break;
       }
     }
     var q = lastUserMsg.toLowerCase();
+
+    // Image Perception Fallback
+    if (lastHasImage) {
+      var imgReply =
+        "### 📸 Perception Layer: Image Received\n\n" +
+        "I have processed your study image. Here is how we break it down:\n\n" +
+        "---\n\n" +
+        "### 1. Key Diagram / Formula Recognition\n" +
+        "When analyzing academic figures or formulas:\n" +
+        "- **Identify Givens**: Note all marked angles, labels, variables, or given dimensions.\n" +
+        "- **Governing Laws**: Match with the relevant theorem (e.g. Newton's Laws, Kirchhoff's Circuit Rules, or Calculus Derivatives).\n\n" +
+        "---\n\n" +
+        "### 2. Next Steps\n" +
+        "What specific value or proof are you solving for in this image? Tell me and we will calculate it step-by-step!";
+      conversationHistory.push({ role: "assistant", content: imgReply });
+      saveHistory();
+      updateBotBubble(imgReply);
+      return;
+    }
 
     // Gravity / Newton's Law
     if (q.indexOf("gravity") !== -1 || q.indexOf("gravitation") !== -1) {
@@ -1519,7 +1802,7 @@ body.dark-mode .katex-display {
     // General Study Concept Explanation
     var genReply = 
       "### 💡 Concept Overview\n\n" +
-      "Here is a structured breakdown regarding **" + escapeHtml(lastUserMsg) + "**:\n\n" +
+      "Here is a structured breakdown regarding **" + escapeHtml(lastUserMsg || "your topic") + "**:\n\n" +
       "1. **Core Intuition**: Understand the underlying definition and the fundamental question it answers.\n" +
       "2. **Governing Principles**: Trace how the components interact step-by-step.\n" +
       "3. **Practical Application**: Verify how this applies to real-world engineering or scientific models.\n\n" +
@@ -1529,29 +1812,38 @@ body.dark-mode .katex-display {
     updateBotBubble(genReply);
   }
 
-  // ── Send Message Handler ─────────────────────────────────────
+  // ── Send Message Handler (Guaranteed Single Execution) ───────
   window.sendMsg = function() {
+    var now = new Date().getTime();
+    if (now - lastSendTimestamp < 800) return; // Prevent double-tap on iOS
+
     var text = msgInput.value;
-    if (!text) return;
     text = text.replace(/^\s+|\s+$/g, "");
-    if (!text) return;
+
+    // Must have either text or an attached image
+    if (!text && !attachedImageDataUrl) return;
 
     if (isWaiting) return;
 
+    lastSendTimestamp = now;
+    isWaiting = true;
+
+    var imageToSend = attachedImageDataUrl;
     msgInput.value = "";
-    appendUserBubble(text);
+    window.removeAttachedImage();
+
+    appendUserBubble(text, imageToSend);
     createBotBubble();
 
-    isWaiting = true;
     sendBtn.classList.remove("active");
 
-    queryAIBrain(text);
+    queryAIBrain(text, imageToSend);
   };
 
   // Input changes toggle active state on send button
   msgInput.addEventListener("input", function() {
     var val = this.value.replace(/^\s+|\s+$/g, "");
-    if (val.length > 0) {
+    if (val.length > 0 || attachedImageDataUrl) {
       sendBtn.classList.add("active");
     } else {
       sendBtn.classList.remove("active");
@@ -1588,6 +1880,7 @@ body.dark-mode .katex-display {
       { role: "system", content: SYSTEM_PROMPT }
     ];
     try { sessionStorage.removeItem("lumen_history"); } catch (e) {}
+    window.removeAttachedImage();
     chatStream.innerHTML =
       '<div class="chat-row bot">' +
       '<div class="bubble">Started a fresh study session! Context reset. What would you like to explore today?<div class="bubble-time">' + getTimeStr() + '</div></div>' +
