@@ -52,8 +52,10 @@
   --math-box-text: #3d2817;
   --heading-color: #3b281c;
   --hr-color: #e2d8cb;
-  --table-border: #d8cebf;
-  --table-header-bg: #eae3d6;
+  --table-border: #dcd4c8;
+  --table-header-bg: #ece5d8;
+  --table-row-bg: #fbf9f4;
+  --table-row-alt-bg: #f5eedf;
   --font-apple: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
 }
@@ -87,6 +89,8 @@ body.dark-mode {
   --hr-color: #1e1e1e;
   --table-border: #262626;
   --table-header-bg: #161616;
+  --table-row-bg: #0d0d0d;
+  --table-row-alt-bg: #141414;
 }
 
 * {
@@ -305,12 +309,12 @@ html, body {
 }
 
 .chat-row.bot {
-  -webkit-justify-content: flex-start;
-  justify-content: flex-start;
+  width: 100%;
+  -webkit-justify-content: center;
+  justify-content: center;
 }
 
 .bubble {
-  max-width: 88%;
   padding: 14px 18px;
   font-size: 15.5px;
   line-height: 1.55;
@@ -322,6 +326,8 @@ html, body {
 
 /* User Message Bubble */
 .chat-row.user .bubble {
+  max-width: 82%;
+  margin-left: auto;
   background-color: var(--bubble-user);
   color: var(--bubble-user-text);
   border: 1px solid var(--bubble-user-border);
@@ -329,13 +335,16 @@ html, body {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
-/* Assistant Message Bubble */
+/* Assistant Message Bubble (Centered, Full Reading Column) */
 .chat-row.bot .bubble {
+  width: 100%;
+  max-width: 100%;
   background-color: var(--bubble-bot);
   color: var(--bubble-bot-text);
   border: 1px solid var(--bubble-bot-border);
-  border-radius: 20px 20px 20px 4px;
+  border-radius: 18px;
   box-shadow: var(--bubble-bot-shadow);
+  padding: 18px 20px;
 }
 
 /* ── Bubble Footer Actions (Copy & Read Aloud) ──────────────── */
@@ -546,22 +555,77 @@ body.dark-mode .bubble code.chat-inline-code {
   padding: 0;
 }
 
-.bubble table {
-  border-collapse: collapse;
+/* ── Tables & Tabular Data Styling ───────────────────────────── */
+.table-wrap {
   width: 100%;
-  margin: 12px 0;
-  font-size: 13px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 16px 0;
+  border-radius: 10px;
+  border: 1px solid var(--table-border);
+  background-color: var(--table-row-bg);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.04);
 }
 
-.bubble th, .bubble td {
-  border: 1px solid var(--table-border);
-  padding: 6px 10px;
+.chat-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: 580px;
+  font-size: 13.5px;
+  line-height: 1.55;
   text-align: left;
 }
 
-.bubble th {
+.chat-table th,
+.chat-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--table-border);
+  border-right: 1px solid var(--table-border);
+  vertical-align: top;
+  word-break: normal;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.chat-table th:last-child,
+.chat-table td:last-child {
+  border-right: none;
+}
+
+.chat-table tr:last-child td {
+  border-bottom: none;
+}
+
+.chat-table th {
   background-color: var(--table-header-bg);
+  color: var(--text-dark);
   font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+/* Ensure first column has plenty of room and never squishes or letter-wraps */
+.chat-table th:first-child,
+.chat-table td:first-child {
+  min-width: 130px;
+  font-weight: 600;
+}
+
+.chat-table td {
+  color: var(--text-dark);
+  background-color: var(--table-row-bg);
+}
+
+.chat-table tr:nth-child(even) td {
+  background-color: var(--table-row-alt-bg);
+}
+
+.table-bullet {
+  color: #3b82f6;
+  font-weight: bold;
+  display: inline-block;
+  margin-right: 4px;
 }
 
 /* ── Formula & LaTeX Styling ────────────────────────────────── */
@@ -1157,6 +1221,53 @@ body.dark-mode .katex-display {
   var conversationHistory = [
     { role: "system", content: SYSTEM_PROMPT }
   ];
+
+  // ── 10 Instant Static Greetings (Zero API Calls, Offline First) ──
+  var staticGreetingIndex = 0;
+  var STATIC_GREETINGS = [
+    "Hello! 👋 I'm **Lumen**, your intelligent study companion. What topic or concept would you like to explore together today?",
+    "Hi there! ✨ Ready whenever you are. Whether it's math formulas, code architectures, or deep concepts, what are we working on?",
+    "Hey! Great to see you. 📚 Feel free to ask a study question, paste a problem, or upload a diagram to get started.",
+    "Hello! Hope your studies are going smoothly today. 💡 What subject or question should we dive into?",
+    "Hi! 👋 Welcome back. I'm here to help break down complex topics into clear, intuitive insights. What's on your mind?",
+    "Greetings! 🚀 Everything is ready for a productive study session. Ask me any question or attach an image to analyze!",
+    "Hey there! 🌟 What are we studying today? Tell me the topic, and we'll break it down step-by-step.",
+    "Hello! 📖 Always here to help you understand difficult concepts with clarity and precision. What shall we tackle first?",
+    "Hi! 👋 Need an explanation, a quick practice quiz, or help solving a tricky problem? Let me know what you'd like to do!",
+    "Hey! Welcome to Lumen. 🎓 From algorithms and physics to history and system design, I'm ready. What would you like to learn?"
+  ];
+
+  function checkInstantGreeting(userText) {
+    if (!userText) return null;
+    var q = userText.toLowerCase().replace(/['’.,!?]/g, "").trim();
+
+    // Specific time-of-day greetings
+    if (/^good\s+morning(\s+lumen)?$/i.test(q)) {
+      return "Good morning! ☀️ Hope you have a wonderful and productive day ahead. What study topic would you like to kick off with?";
+    }
+    if (/^good\s+afternoon(\s+lumen)?$/i.test(q)) {
+      return "Good afternoon! 🌤️ Ready for an afternoon study session? What question or problem are you working on?";
+    }
+    if (/^good\s+evening(\s+lumen)?$/i.test(q)) {
+      return "Good evening! 🌙 Hope you had a great day. Let's make your study time productive and relaxing. What can I help you explore?";
+    }
+    if (/^(how\s+are\s+you|how\s+are\s+u|hows\s+it\s+going|how\s+is\s+it\s+going)(\s+lumen)?$/i.test(q)) {
+      return "I'm doing great, thank you for asking! 😊 Ready and energized to help you study. How can I assist you today?";
+    }
+    if (/^(whats\s+up|what\s+up|sup)(\s+lumen)?$/i.test(q)) {
+      return "Not much, just ready to solve some problems and analyze concepts! 🚀 What are we learning today?";
+    }
+
+    // General greetings: hi, hello, hey, yo, greetings, etc.
+    var isGreeting = /^(hi|hello|hey|heyy|heyyy|yo|greetings|hola|namaste|hi\s+there|hello\s+there|hey\s+there)(\s+lumen)?$/i.test(q);
+    if (isGreeting) {
+      var reply = STATIC_GREETINGS[staticGreetingIndex % STATIC_GREETINGS.length];
+      staticGreetingIndex++;
+      return reply;
+    }
+
+    return null;
+  }
 
   // ── Instant Factual Grounding for Real-Time Inquiries ───────
   function checkInstantFactualResponse(userText) {
@@ -1793,13 +1904,14 @@ body.dark-mode .katex-display {
     });
 
     // 11. Tables
-    text = text.replace(/(?:^\|.+?\|\s*\n)+/gm, function(tableBlock) {
+    text = text.replace(/(?:^\|[^\n]+\|\s*(?:\n|$))+/gm, function(tableBlock) {
       var lines = tableBlock.trim().split("\n");
-      var html = '<table>';
+      var html = '<div class="table-wrap"><table class="chat-table">';
       var isHeader = true;
       for (var i = 0; i < lines.length; i++) {
         var line = lines[i].trim();
-        if (line.indexOf("|---") !== -1 || line.indexOf("|:---") !== -1) {
+        if (!line || !/^\|.*\|$/.test(line)) continue;
+        if (/^\|(?:[\s\-:]+\|)+$/.test(line) || line.indexOf("|---") !== -1 || line.indexOf("|:---") !== -1) {
           isHeader = false;
           continue;
         }
@@ -1807,12 +1919,16 @@ body.dark-mode .katex-display {
         html += '<tr>';
         for (var c = 0; c < cells.length; c++) {
           var tag = isHeader ? 'th' : 'td';
-          html += '<' + tag + '>' + cells[c].trim() + '</' + tag + '>';
+          var content = cells[c].trim();
+          content = content.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
+          content = content.replace(/(?:<br>\s*|\s*)([•\-])\s+/g, '<br><span class="table-bullet">•</span> ');
+          content = content.replace(/^<br>/i, '');
+          html += '<' + tag + '>' + content + '</' + tag + '>';
         }
         html += '</tr>';
         if (isHeader) isHeader = false;
       }
-      html += '</table>';
+      html += '</table></div>';
       return html;
     });
 
@@ -1822,7 +1938,7 @@ body.dark-mode .katex-display {
     for (var i = 0; i < rawBlocks.length; i++) {
       var b = rawBlocks[i].trim();
       if (!b) continue;
-      if (/^<(h[1-4]|ul|ol|hr|table|pre)/i.test(b) || b.indexOf("TOKENMATHBLOCK") === 0 || b.indexOf("TOKENCODEBLOCK") === 0) {
+      if (/^<(h[1-4]|ul|ol|hr|table|div|pre)/i.test(b) || b.indexOf("TOKENMATHBLOCK") === 0 || b.indexOf("TOKENCODEBLOCK") === 0) {
         outBlocks.push(b);
       } else {
         outBlocks.push('<p>' + b.replace(/\n/g, "<br>") + '</p>');
@@ -2019,6 +2135,17 @@ body.dark-mode .katex-display {
     }
     conversationHistory.push(userEntry);
     saveHistory();
+
+    // Check instant static greeting (hello, hi, greetings - zero API calls, instant response)
+    var instantGreeting = checkInstantGreeting(userText);
+    if (instantGreeting && !imageDataUrl) {
+      setTimeout(function() {
+        conversationHistory.push({ role: "assistant", content: instantGreeting });
+        saveHistory();
+        updateBotBubble(instantGreeting);
+      }, 150);
+      return;
+    }
 
     // Check instant factual response (Date/Time, 2026 Tamil Nadu Politics / Vijay / CM)
     var instantFact = checkInstantFactualResponse(userText);
