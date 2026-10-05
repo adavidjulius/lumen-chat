@@ -2005,6 +2005,8 @@ body.dark-mode .katex-display {
     chatStream.appendChild(row);
     if (!skipScroll) scrollToBottom(true);
   }
+  window.appendAssistantBubble = appendAssistantBubble;
+  window.formatMarkdown = formatMarkdown;
 
   function createBotBubble() {
     var row = document.createElement("div");
