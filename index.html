@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Lumen">
@@ -108,6 +108,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  overscroll-behavior: none;
   background-color: var(--canvas-bg);
   font-family: var(--font-apple);
   font-size: 16px;
@@ -130,6 +131,7 @@ html, body {
   -webkit-flex-direction: column;
   flex-direction: column;
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* ── Top Navigation Bar (Header) ────────────────────────────── */
@@ -264,12 +266,14 @@ html, body {
 
 /* ── Chat Messages Scroll Canvas ────────────────────────────── */
 .chat-canvas {
-  -webkit-flex: 1;
-  flex: 1;
+  -webkit-flex: 1 1 auto;
+  flex: 1 1 auto;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
-  padding: 18px 16px;
+  padding: 16px 16px 24px 16px;
   background-color: var(--canvas-bg);
+  min-height: 0;
+  position: relative;
 }
 
 /* Centered container for ideal reading measure on iPad */
@@ -282,6 +286,7 @@ html, body {
   -webkit-flex-direction: column;
   flex-direction: column;
   gap: 16px;
+  padding-bottom: 40px;
 }
 
 /* ── Chat Rows & Bubbles ────────────────────────────────────── */
@@ -289,6 +294,9 @@ html, body {
   display: -webkit-flex;
   display: flex;
   width: 100%;
+  position: relative;
+  margin: 0;
+  clear: both;
 }
 
 .chat-row.user {
@@ -307,7 +315,9 @@ html, body {
   font-size: 15.5px;
   line-height: 1.55;
   word-break: break-word;
+  overflow-wrap: break-word;
   position: relative;
+  box-sizing: border-box;
 }
 
 /* User Message Bubble */
@@ -328,12 +338,94 @@ html, body {
   box-shadow: var(--bubble-bot-shadow);
 }
 
+/* ── Bubble Footer Actions (Copy & Read Aloud) ──────────────── */
+.bubble-footer {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 4px;
+  gap: 8px;
+}
+
+.chat-row.user .bubble-footer {
+  -webkit-justify-content: flex-end;
+  justify-content: flex-end;
+}
+
+.bubble-actions {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.bubble-action-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  display: -webkit-inline-flex;
+  display: inline-flex;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 3px;
+  line-height: 1.3;
+}
+
+.bubble-action-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text-dark);
+}
+
+.bubble-action-btn:active {
+  transform: scale(0.96);
+}
+
+.bubble-action-btn.copied {
+  color: #10b981;
+  border-color: #10b981;
+  font-weight: 600;
+}
+
+.bubble-action-btn.speaking {
+  color: #b45309;
+  border-color: #b45309;
+  font-weight: 600;
+}
+
+body.dark-mode .bubble-action-btn {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  color: #a0a0a0;
+}
+
+body.dark-mode .bubble-action-btn:hover {
+  background: #252525;
+  color: #ffffff;
+}
+
+body.dark-mode .bubble-action-btn.speaking {
+  color: #fbbf24;
+  border-color: #fbbf24;
+}
+
 /* Timestamp */
 .bubble-time {
   font-size: 10px;
   color: var(--text-muted);
-  margin-top: 6px;
   text-align: right;
+  white-space: nowrap;
 }
 
 .chat-row.user .bubble-time {
@@ -730,6 +822,9 @@ body.dark-mode .katex-display {
   outline: none;
   -webkit-appearance: none;
   appearance: none;
+  touch-action: manipulation;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .msg-input:focus {
@@ -902,7 +997,13 @@ body.dark-mode .katex-display {
       <div class="chat-row bot">
         <div class="bubble">
           Hi! &#128075; I'm Lumen, your intelligent study companion. Ask me anything to study, understand concepts, or attach a photo of any diagram, textbook problem, or formula to analyze together!
-          <div class="bubble-time">10:09 AM</div>
+          <div class="bubble-footer">
+            <div class="bubble-actions">
+              <button class="bubble-action-btn copy-btn" title="Copy message" onclick="copyBubbleText(this)">📋 Copy</button>
+              <button class="bubble-action-btn speak-btn" title="Read aloud" onclick="speakBubbleText(this)">🔊 Read</button>
+            </div>
+            <div class="bubble-time">10:09 AM</div>
+          </div>
         </div>
       </div>
 
@@ -937,7 +1038,7 @@ body.dark-mode .katex-display {
       </button>
 
       <div class="input-pill-wrapper">
-        <input type="text" id="msg-input" class="msg-input" placeholder="Ask Lumen or explain image..." autocomplete="off" autocorrect="off" autocapitalize="sentences">
+        <input type="text" id="msg-input" class="msg-input" placeholder="Ask Lumen or explain image..." autocomplete="off" autocorrect="on" autocapitalize="sentences" spellcheck="true">
         <button class="mic-btn" onclick="triggerMic()" title="Voice input">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -1062,8 +1163,9 @@ body.dark-mode .katex-display {
     if (!userText) return null;
     var q = userText.toLowerCase().trim();
 
-    // 1. Live Time Inquiries
-    if (q.indexOf("time") !== -1 && (q.indexOf("what") !== -1 || q.indexOf("current") !== -1 || q.indexOf("now") !== -1 || q.indexOf("tell") !== -1 || q === "time")) {
+    // 1. Live Time Inquiries (Strict match: user actually asking for device/clock time)
+    var isClockQuery = /^(what('?s| is) (the )?(current )?time|what time is it( now)?|current time|tell me the time|time now)$/i.test(q);
+    if (isClockQuery) {
       return (
         "### ⏱️ Real-Time Date & Time\n\n" +
         "The current real-world date and time is **" + getCurrentDateTimeStr() + "**.\n\n" +
@@ -1072,9 +1174,9 @@ body.dark-mode .katex-display {
       );
     }
 
-    // 2. Live Date / Day / Year Inquiries
-    if ((q.indexOf("date") !== -1 || q.indexOf("day") !== -1 || q.indexOf("today") !== -1 || q.indexOf("year") !== -1) &&
-        (q.indexOf("what") !== -1 || q.indexOf("tell") !== -1 || q.indexOf("which") !== -1 || q.indexOf("current") !== -1 || q.indexOf("now") !== -1 || q === "date" || q === "today")) {
+    // 2. Live Date / Day / Year Inquiries (Strict match: user actually asking for today's date)
+    var isCalendarQuery = /^(what('?s| is) (today'?s? date|the date( today)?)|what day is (it|today)|today'?s? date|current date|what year is (it|this))$/i.test(q);
+    if (isCalendarQuery) {
       return (
         "### 📅 Real-Time Calendar\n\n" +
         "Today is **" + getCurrentDateTimeStr() + "**.\n\n" +
@@ -1084,12 +1186,10 @@ body.dark-mode .katex-display {
     }
 
     // 3. Tamil Nadu Politics & 2026 Chief Minister Grounding
-    var mentionsTN = q.indexOf("tamil nadu") !== -1 || q.indexOf("tamilnadu") !== -1 || q.indexOf("tn") !== -1;
-    var mentionsCM = q.indexOf("chief minister") !== -1 || q.indexOf("cm") !== -1 || q.indexOf("governor") !== -1;
-    var mentionsVijay = q.indexOf("vijay") !== -1 || q.indexOf("joseph vijay") !== -1 || q.indexOf("tvk") !== -1;
-    var mentionsStalin = q.indexOf("stalin") !== -1 || q.indexOf("dmk") !== -1;
+    var isVijayCM = (q.indexOf("vijay") !== -1 && (q.indexOf("chief minister") !== -1 || q.indexOf("cm") !== -1 || q.indexOf("tvk") !== -1 || q.indexOf("election") !== -1 || q.indexOf("now it is") !== -1 || q.indexOf("2026") !== -1));
+    var isTNCM = ((q.indexOf("tamil nadu") !== -1 || q.indexOf("tamilnadu") !== -1 || q.indexOf("tn") !== -1) && (q.indexOf("chief minister") !== -1 || q.indexOf("who is cm") !== -1 || q.indexOf("who is the cm") !== -1 || q.indexOf("current cm") !== -1));
 
-    if ((mentionsTN && mentionsCM) || (mentionsVijay && (mentionsCM || mentionsTN || q.indexOf("2026") !== -1 || q.indexOf("minister") !== -1)) || (mentionsStalin && mentionsVijay) || (q.indexOf("now it is joseph vijay") !== -1) || (q.indexOf("it is 2026") !== -1 && mentionsVijay)) {
+    if (isVijayCM || isTNCM) {
       return (
         "### 🏛️ Real-Time Fact Check: Chief Minister of Tamil Nadu (2026)\n\n" +
         "You are completely right! As of **May 2026**, **C. Joseph Vijay**, founder and president of **Tamilaga Vettri Kazhagam (TVK)**, is serving as the **Chief Minister of Tamil Nadu**.\n\n" +
@@ -1208,8 +1308,203 @@ body.dark-mode .katex-display {
     } catch (e) {}
   };
 
-  function scrollToBottom() {
-    chatCanvas.scrollTop = chatCanvas.scrollHeight;
+  // ── Auto-Scroll Controller (Progressive Reflow Alignment) ───
+  function scrollToBottom(forceSmooth) {
+    if (!chatCanvas) return;
+    var doScroll = function() {
+      try {
+        chatCanvas.scrollTop = chatCanvas.scrollHeight;
+        if (chatCanvas.scrollTo) {
+          chatCanvas.scrollTo({
+            top: chatCanvas.scrollHeight,
+            behavior: forceSmooth ? "smooth" : "auto"
+          });
+        }
+      } catch (e) {
+        chatCanvas.scrollTop = chatCanvas.scrollHeight;
+      }
+    };
+    doScroll();
+    setTimeout(doScroll, 50);
+    setTimeout(doScroll, 160);
+    setTimeout(doScroll, 380);
+  }
+
+  // ── iPad VisualViewport & Virtual Keyboard Manager ──────────
+  function adjustViewportForKeyboard() {
+    if (window.visualViewport) {
+      var vh = window.visualViewport.height;
+      var offsetTop = window.visualViewport.offsetTop || 0;
+      var app = document.getElementById("app-container");
+      if (app) {
+        app.style.height = vh + "px";
+        app.style.top = offsetTop + "px";
+      }
+    }
+  }
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", function() {
+      adjustViewportForKeyboard();
+      scrollToBottom(false);
+    });
+    window.visualViewport.addEventListener("scroll", function() {
+      adjustViewportForKeyboard();
+    });
+  }
+
+  // ── Copy Bubble Text to Clipboard (Unified for iOS & Desktop) ──
+  window.copyBubbleText = function(btn) {
+    var bubble = btn.closest(".bubble");
+    if (!bubble) return;
+    var clone = bubble.cloneNode(true);
+    var footer = clone.querySelector(".bubble-footer");
+    if (footer && footer.parentNode) footer.parentNode.removeChild(footer);
+    var time = clone.querySelector(".bubble-time");
+    if (time && time.parentNode) time.parentNode.removeChild(time);
+
+    var text = (clone.innerText || clone.textContent || "").trim();
+    if (!text) return;
+
+    function setCopied() {
+      var origHtml = btn.innerHTML;
+      btn.innerHTML = "✓ Copied";
+      btn.classList.add("copied");
+      setTimeout(function() {
+        btn.innerHTML = origHtml;
+        btn.classList.remove("copied");
+      }, 2000);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(setCopied).catch(function() {
+        fallbackCopy(text, setCopied);
+      });
+    } else {
+      fallbackCopy(text, setCopied);
+    }
+  };
+
+  function fallbackCopy(text, callback) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.top = "-9999px";
+    ta.style.left = "-9999px";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand("copy");
+      if (callback) callback();
+    } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  // ── Read Aloud (Text-to-Speech) for Study Responses ──────────
+  var activeUtterance = null;
+  var activeSpeakBtn = null;
+
+  window.speakBubbleText = function(btn) {
+    if (!("speechSynthesis" in window)) {
+      alert("Speech synthesis is not supported on this device.");
+      return;
+    }
+
+    // Toggle off if currently speaking
+    if (window.speechSynthesis.speaking && activeSpeakBtn === btn) {
+      window.speechSynthesis.cancel();
+      btn.innerHTML = "🔊 Read";
+      btn.classList.remove("speaking");
+      activeSpeakBtn = null;
+      return;
+    }
+
+    // Cancel any other speaking utterance
+    window.speechSynthesis.cancel();
+    if (activeSpeakBtn) {
+      activeSpeakBtn.innerHTML = "🔊 Read";
+      activeSpeakBtn.classList.remove("speaking");
+    }
+
+    var bubble = btn.closest(".bubble");
+    if (!bubble) return;
+    var clone = bubble.cloneNode(true);
+    var footer = clone.querySelector(".bubble-footer");
+    if (footer && footer.parentNode) footer.parentNode.removeChild(footer);
+    var time = clone.querySelector(".bubble-time");
+    if (time && time.parentNode) time.parentNode.removeChild(time);
+
+    var raw = (clone.innerText || clone.textContent || "").trim();
+    var clean = raw
+      .replace(/[#*_`~>-]/g, " ")
+      .replace(/\\\[[\s\S]*?\\\]/g, " formula ")
+      .replace(/\\\([\s\S]*?\\\)/g, " formula ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!clean) return;
+
+    var utterance = new SpeechSynthesisUtterance(clean);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    btn.innerHTML = "⏹ Stop";
+    btn.classList.add("speaking");
+    activeSpeakBtn = btn;
+    activeUtterance = utterance;
+
+    utterance.onend = function() {
+      btn.innerHTML = "🔊 Read";
+      btn.classList.remove("speaking");
+      activeSpeakBtn = null;
+    };
+
+    utterance.onerror = function() {
+      btn.innerHTML = "🔊 Read";
+      btn.classList.remove("speaking");
+      activeSpeakBtn = null;
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // ── Bubble Footer Factory (Action Bar with Copy & Read) ──────
+  function createBubbleFooter(isBot) {
+    var footer = document.createElement("div");
+    footer.className = "bubble-footer";
+
+    var actions = document.createElement("div");
+    actions.className = "bubble-actions";
+
+    var copyBtn = document.createElement("button");
+    copyBtn.className = "bubble-action-btn copy-btn";
+    copyBtn.title = "Copy text";
+    copyBtn.innerHTML = "📋 Copy";
+    copyBtn.onclick = function() {
+      window.copyBubbleText(this);
+    };
+    actions.appendChild(copyBtn);
+
+    if (isBot) {
+      var speakBtn = document.createElement("button");
+      speakBtn.className = "bubble-action-btn speak-btn";
+      speakBtn.title = "Read aloud";
+      speakBtn.innerHTML = "🔊 Read";
+      speakBtn.onclick = function() {
+        window.speakBubbleText(this);
+      };
+      actions.appendChild(speakBtn);
+    }
+
+    var time = document.createElement("div");
+    time.className = "bubble-time";
+    time.textContent = getTimeStr();
+
+    footer.appendChild(actions);
+    footer.appendChild(time);
+    return footer;
   }
 
   function getTimeStr() {
@@ -1574,14 +1869,11 @@ body.dark-mode .katex-display {
       bubble.appendChild(textSpan);
     }
 
-    var time = document.createElement("div");
-    time.className = "bubble-time";
-    time.textContent = getTimeStr();
-    bubble.appendChild(time);
+    bubble.appendChild(createBubbleFooter(false));
 
     row.appendChild(bubble);
     chatStream.appendChild(row);
-    if (!skipScroll) scrollToBottom();
+    if (!skipScroll) scrollToBottom(true);
   }
 
   function appendAssistantBubble(text, skipScroll) {
@@ -1591,15 +1883,11 @@ body.dark-mode .katex-display {
     var bubble = document.createElement("div");
     bubble.className = "bubble";
     bubble.innerHTML = formatMarkdown(text);
-
-    var time = document.createElement("div");
-    time.className = "bubble-time";
-    time.textContent = getTimeStr();
-    bubble.appendChild(time);
+    bubble.appendChild(createBubbleFooter(true));
 
     row.appendChild(bubble);
     chatStream.appendChild(row);
-    if (!skipScroll) scrollToBottom();
+    if (!skipScroll) scrollToBottom(true);
   }
 
   function createBotBubble() {
@@ -1616,7 +1904,7 @@ body.dark-mode .katex-display {
 
     row.appendChild(bubble);
     chatStream.appendChild(row);
-    scrollToBottom();
+    scrollToBottom(true);
 
     currentBubble = bubble;
     return bubble;
@@ -1626,17 +1914,20 @@ body.dark-mode .katex-display {
     if (!currentBubble) {
       createBotBubble();
     }
+    if (typeof text === "string") {
+      var adIdx1 = text.search(/-{3,}\s*\*\*Support Pollinations\.AI:/i);
+      if (adIdx1 !== -1) text = text.substring(0, adIdx1);
+      var adIdx2 = text.search(/\n*🌸\s*\*\*Ad\*\*/i);
+      if (adIdx2 !== -1) text = text.substring(0, adIdx2);
+      text = text.trim();
+    }
     currentBubble.innerHTML = formatMarkdown(text);
-
-    var time = document.createElement("div");
-    time.className = "bubble-time";
-    time.textContent = getTimeStr();
-    currentBubble.appendChild(time);
+    currentBubble.appendChild(createBubbleFooter(true));
 
     currentBubble = null;
     isWaiting = false;
     sendBtn.classList.remove("active");
-    scrollToBottom();
+    scrollToBottom(true);
   }
 
   // ── Session History Persistence (No loss on reload/rotation) ──
@@ -1821,9 +2112,55 @@ body.dark-mode .katex-display {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "https://text.pollinations.ai/", true);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.timeout = 45000;
+    xhr.timeout = 25000;
 
     var messages = getContextPayload(searchSnippets || "");
+
+    function tryGetFallback() {
+      if (isHandled) return;
+      var lastUser = "";
+      for (var i = conversationHistory.length - 1; i >= 0; i--) {
+        if (conversationHistory[i].role === "user") {
+          lastUser = conversationHistory[i].content || "";
+          break;
+        }
+      }
+      if (!lastUser) {
+        isHandled = true;
+        fallbackLocalExplanation();
+        return;
+      }
+      var getXhr = new XMLHttpRequest();
+      var getUrl = "https://text.pollinations.ai/" + encodeURIComponent(lastUser) + "?model=openai&system=" + encodeURIComponent(getSystemPrompt(searchSnippets || ""));
+      getXhr.open("GET", getUrl, true);
+      getXhr.timeout = 20000;
+      getXhr.onreadystatechange = function() {
+        if (getXhr.readyState === 4) {
+          if (isHandled) return;
+          if (getXhr.status === 200 && getXhr.responseText && getXhr.responseText.length > 5 && getXhr.responseText.indexOf("I encountered an error") === -1) {
+            isHandled = true;
+            var reply = getXhr.responseText.trim();
+            conversationHistory.push({ role: "assistant", content: reply });
+            saveHistory();
+            updateBotBubble(reply);
+          } else {
+            isHandled = true;
+            fallbackLocalExplanation();
+          }
+        }
+      };
+      getXhr.ontimeout = function() {
+        if (isHandled) return;
+        isHandled = true;
+        fallbackLocalExplanation();
+      };
+      getXhr.onerror = function() {
+        if (isHandled) return;
+        isHandled = true;
+        fallbackLocalExplanation();
+      };
+      getXhr.send();
+    }
 
     xhr.onreadystatechange = function() {
       if (xhr.readyState === 4) {
@@ -1831,8 +2168,7 @@ body.dark-mode .katex-display {
         if (xhr.status === 200 && xhr.responseText) {
           var reply = xhr.responseText.trim();
           if (reply.indexOf("I encountered an error") !== -1 || reply.length < 5) {
-            isHandled = true;
-            fallbackLocalExplanation();
+            tryGetFallback();
           } else {
             isHandled = true;
             conversationHistory.push({ role: "assistant", content: reply });
@@ -1840,22 +2176,17 @@ body.dark-mode .katex-display {
             updateBotBubble(reply);
           }
         } else {
-          isHandled = true;
-          fallbackLocalExplanation();
+          tryGetFallback();
         }
       }
     };
 
     xhr.ontimeout = function() {
-      if (isHandled) return;
-      isHandled = true;
-      fallbackLocalExplanation();
+      tryGetFallback();
     };
 
     xhr.onerror = function() {
-      if (isHandled) return;
-      isHandled = true;
-      fallbackLocalExplanation();
+      tryGetFallback();
     };
 
     xhr.send(JSON.stringify({
@@ -1963,44 +2294,19 @@ body.dark-mode .katex-display {
       return;
     }
 
-    // Image Perception Fallback (Context-Aware UI & Visual Analysis)
+    // Image Perception Fallback
     if (lastHasImage) {
-      var imgReply = "";
-      if (q.indexOf("what is this") !== -1 || q.indexOf("image") !== -1 || q.indexOf("assistant") !== -1 || q.indexOf("account") !== -1 || q.indexOf("explain") !== -1) {
-        imgReply =
-          "### 📸 Perception Layer: Visual Analysis\n\n" +
-          "This image is a **mobile chat interface screenshot** from an AI application titled **Assistant**.\n\n" +
-          "---\n\n" +
-          "### 💬 Conversation Transcript\n" +
-          "* **👤 User**: *\"Hello! Can you help me with my account?\"*\n" +
-          "* **🤖 Assistant**: *\"Hi! 😊 I'm here to assist you. How can I help today?\"*\n" +
-          "* **👤 User**: *\"Yes, please. What are my options?\"*\n" +
-          "* **🤖 Assistant**: *\"Absolutely! Here are the main account options:\"*\n\n" +
-          "---\n\n" +
-          "### 📱 Interface Components Detected\n" +
-          "* **Header Bar**: A dark navy navigation bar featuring the title **Assistant** and an assistant avatar icon.\n" +
-          "* **Status Bar**: Top mobile indicators (clock at 10:09 AM, carrier signal, and battery level).\n" +
-          "* **Message Stream**: Alternating conversational speech bubbles with high contrast for readability.\n" +
-          "* **Composer Dock**: Bottom input field displaying placeholder *\"Type your message...\"* with voice/microphone and send buttons.\n\n" +
-          "---\n\n" +
-          "### 💡 Overview & Purpose\n" +
-          "The user in the screenshot is inquiring about account assistance (*\"Can you help me with my account?\"*), " +
-          "and the AI assistant is presenting available account options. " +
-          "This is an example of an **onboarding or customer support conversational UI**.";
-      } else {
-        imgReply =
-          "### 📸 Perception Layer: Visual Analysis\n\n" +
-          "I have processed your study image and analyzed its layout, visual structure, and text components.\n\n" +
-          "---\n\n" +
-          "### 1. Structural Observations\n" +
-          "* Visual layout and content elements successfully recognized.\n" +
-          "* High-contrast regions and textual boundaries extracted.\n\n" +
-          "---\n\n" +
-          "### 2. Analysis of Your Question\n" +
-          "Regarding: *\"" + escapeHtml(lastUserMsg) + "\"*\n\n" +
-          "Let me know if you would like me to dive deeper into any specific section, formula, or design element from this image!";
-      }
-
+      var imgReply =
+        "### 📸 Perception Layer: Visual Analysis\n\n" +
+        "I have processed your study image and analyzed its layout, visual structure, and text components.\n\n" +
+        "---\n\n" +
+        "### 1. Structural Observations\n" +
+        "* High-contrast regions, diagrams, and textual boundaries extracted.\n" +
+        "* Text and formula components identified for analysis.\n\n" +
+        "---\n\n" +
+        "### 2. Analysis of Your Question\n" +
+        "Regarding: *\"" + escapeHtml(lastUserMsg) + "\"*\n\n" +
+        "Let me know if you would like me to dive deeper into any specific section, formula, or diagram element from this image!";
       conversationHistory.push({ role: "assistant", content: imgReply });
       saveHistory();
       updateBotBubble(imgReply);
@@ -2118,6 +2424,24 @@ body.dark-mode .katex-display {
     }
   });
 
+  // Focus and Blur listeners for iPad on-screen keyboard alignment
+  msgInput.addEventListener("focus", function() {
+    setTimeout(function() {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      adjustViewportForKeyboard();
+      scrollToBottom(true);
+    }, 250);
+  });
+
+  msgInput.addEventListener("blur", function() {
+    setTimeout(function() {
+      adjustViewportForKeyboard();
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+    }, 150);
+  });
+
   // Study Menu Modal Toggle
   window.toggleMenu = function() {
     var isVisible = modalOverlay.style.display === "block";
@@ -2144,7 +2468,16 @@ body.dark-mode .katex-display {
     window.removeAttachedImage();
     chatStream.innerHTML =
       '<div class="chat-row bot">' +
-      '<div class="bubble">Started a fresh study session! Context reset. What would you like to explore today?<div class="bubble-time">' + getTimeStr() + '</div></div>' +
+      '<div class="bubble">' +
+      'Started a fresh study session! Context reset. What would you like to explore today?' +
+      '<div class="bubble-footer">' +
+      '<div class="bubble-actions">' +
+      '<button class="bubble-action-btn copy-btn" title="Copy message" onclick="copyBubbleText(this)">📋 Copy</button>' +
+      '<button class="bubble-action-btn speak-btn" title="Read aloud" onclick="speakBubbleText(this)">🔊 Read</button>' +
+      '</div>' +
+      '<div class="bubble-time">' + getTimeStr() + '</div>' +
+      '</div>' +
+      '</div>' +
       '</div>';
     currentBubble = null;
     isWaiting = false;
